@@ -1,14 +1,18 @@
 package com.instabot.data.model.user
 
+import javax.persistence.Entity
+import javax.persistence.Id
 import java.time.LocalDateTime
 
 // TODO If the name has changed -> change it on user
 // TODO When creating, check if in white list
 
+@javax.persistence.Entity
 class User {
+    @Id
+    String id
     String masterUsername
     String username
-    String id
     String name
     boolean isInWhiteList
 
@@ -32,6 +36,9 @@ class User {
         this.username = username
         this.id = masterUsername + "_" + username
         this.name = name
+    }
+
+    User() {
     }
 
     String getMasterUsername() {
