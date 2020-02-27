@@ -1,31 +1,42 @@
 package com.instabot.data.model.user
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+
+import javax.persistence.Entity
+import javax.persistence.Id
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 // TODO If the name has changed -> change it on user
 // TODO When creating, check if in white list
 
+@Entity
 class User {
-    String masterUsername
-    String username
-    String id
-    String name
-    boolean isInWhiteList
+    @Id
+    private String id
+    private String masterUsername
+    private String username
+    private String name
+    private boolean isInWhiteList
 
-    boolean isFollower
-    LocalDateTime isFollowerLastUpdatedAt
-    LocalDateTime unfollowedAt
-    boolean isFollowed
-    LocalDateTime isFollowedLastUpdatedAt
-    LocalDateTime gotUnfollowedAt
+    private boolean isFollower
+    private LocalDateTime isFollowerLastUpdatedAt
+    private LocalDateTime unfollowedAt
+    private boolean isFollowed
+    private LocalDateTime isFollowedLastUpdatedAt
+    private LocalDateTime becameUnfollowedAt
 
-    int nrOfLikes
-    int targetNrOfLikes
-    int nrOfComments
-    int targetNrOfComments
+    private int nrOfLikes
+    private int targetNrOfLikes
+    private int nrOfComments
+    private int targetNrOfComments
 
-    LocalDateTime processedAt
-    UserStatus userStatus
+    private LocalDateTime processedAt
+    private UserStatus userStatus
+
+    protected User() {
+
+    }
 
     User(String masterUsername, String username, String name) {
         this.masterUsername = masterUsername
@@ -67,23 +78,22 @@ class User {
     }
 
     void setIsFollower(boolean isFollower) {
+        if (!isFollower && this.isFollower) {
+            this.unfollowedAt = LocalDateTime.now()
+        } else if (isFollower && !this.isFollower) {
+            this.unfollowedAt = null
+        }
+
         this.isFollower = isFollower
+        this.isFollowerLastUpdatedAt = LocalDateTime.now()
     }
 
     LocalDateTime getIsFollowerLastUpdatedAt() {
         return isFollowerLastUpdatedAt
     }
 
-    void setIsFollowerLastUpdatedAt(LocalDateTime isFollowerLastUpdatedAt) {
-        this.isFollowerLastUpdatedAt = isFollowerLastUpdatedAt
-    }
-
     LocalDateTime getUnfollowedAt() {
         return unfollowedAt
-    }
-
-    void setUnfollowedAt(LocalDateTime unfollowedAt) {
-        this.unfollowedAt = unfollowedAt
     }
 
     boolean getIsFollowed() {
@@ -91,23 +101,23 @@ class User {
     }
 
     void setIsFollowed(boolean isFollowed) {
+        if (!isFollowed && this.isFollowed) {
+            this.becameUnfollowedAt = LocalDateTime.now()
+        } else {
+            if (isFollowed && !this.isFollowed) {
+                this.becameUnfollowedAt = null
+            }
+        }
         this.isFollowed = isFollowed
+        this.isFollowedLastUpdatedAt = LocalDateTime.now()
     }
 
     LocalDateTime getIsFollowedLastUpdatedAt() {
         return isFollowedLastUpdatedAt
     }
 
-    void setIsFollowedLastUpdatedAt(LocalDateTime isFollowedLastUpdatedAt) {
-        this.isFollowedLastUpdatedAt = isFollowedLastUpdatedAt
-    }
-
-    LocalDateTime getGotUnfollowedAt() {
-        return gotUnfollowedAt
-    }
-
-    void setGotUnfollowedAt(LocalDateTime gotUnfollowedAt) {
-        this.gotUnfollowedAt = gotUnfollowedAt
+    LocalDateTime getBecameUnfollowedAt() {
+        return becameUnfollowedAt
     }
 
     int getNrOfLikes() {
@@ -156,6 +166,11 @@ class User {
 
     void setUserStatus(UserStatus userStatus) {
         this.userStatus = userStatus
+    }
+
+    public String toXml() {
+        XmlMapper xmlMapper = new XmlMapper();
+        String xml = xmlMapper.writeValueAsString(this)
     }
 
     @Override
