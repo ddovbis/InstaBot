@@ -1,6 +1,7 @@
 package com.instabot.webdriver
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
@@ -10,56 +11,72 @@ import org.openqa.selenium.support.ui.WebDriverWait
 import java.awt.*
 
 public class InstaWebDriver {
-    private static final Logger LOG = Logger.getLogger(InstaWebDriver.class)
+    private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
+    private static final WebDriverType WEB_DRIVER_TYPE = WebDriverType.valueOf(System.getProperty("webdriver.type"))
 
     public WebDriver driver
-    public JavascriptExecutor jse
+    public JavascriptExecutor jse;
     public WebDriverWait wait
 
-    private WEB_DRIVER_TYPE webDriverType
-    private int openBrowserOnMonitorNr
-    private String loginUsername
-    private String loginPassword
+    private String primaryUsername
+    private String password
 
-    public InstaWebDriver(WEB_DRIVER_TYPE newWebDriverType, String newLoginUsername, String newLoginPassword, int newOpenBrowserOnMonitorNr) throws InterruptedException {
-        webDriverType = newWebDriverType
-        openBrowserOnMonitorNr = newOpenBrowserOnMonitorNr
-        loginUsername = newLoginUsername
-        loginPassword = newLoginPassword
+    public InstaWebDriver(String primaryUsername, String password) throws InterruptedException {
+        this.primaryUsername = primaryUsername
+        this.password = password
 
-        initiateWebDriver()
-        initiateWebDriverWait()
-        initiateJavaScriptExecutor()
+        LOG.info("Initialize InstaWebDriver for primary user: $primaryUsername")
+        initializeWebDriver()
+        initializeWebDriverWait()
+        initializeJavaScriptExecutor()
         moveBrowserToCorrectMonitor()
         maximizeBrowserWindow()
         logIn()
     }
 
-    private void initiateWebDriver() {
+    private void initializeWebDriver() {
         LOG.info("Initialize WebDriver")
-        if (webDriverType == WEB_DRIVER_TYPE.CHROME) {
+        if (WEB_DRIVER_TYPE == WebDriverType.CHROME) {
             driver = new ChromeDriver()
-        } else if (webDriverType == WEB_DRIVER_TYPE.FIREFOX) {
+        } else if (WEB_DRIVER_TYPE == WebDriverType.FIREFOX) {
             driver = new FirefoxDriver()
         } else {
-            throw new IllegalArgumentException("Unsupported WebDriver type: $webDriverType")
+            throw new IllegalArgumentException("Unsupported WebDriver type: $WEB_DRIVER_TYPE")
         }
     }
 
-    private void initiateJavaScriptExecutor() {
+    private void initializeJavaScriptExecutor() {
         jse = (JavascriptExecutor) driver
     }
 
-    private void initiateWebDriverWait() {
+    private void initializeWebDriverWait() {
         wait = new WebDriverWait(driver, 10)
     }
 
     private void moveBrowserToCorrectMonitor() {
+        int openBrowserOnDisplayNr = System.getProperty("open.browser.on.display.nr") as int
+
+        if (GraphicsEnvironment.isHeadless()) {
+            return
+        }
+
+        if (openBrowserOnDisplayNr < 0) {
+            LOG.warn("Browser is set up to be opened on ${openBrowserOnDisplayNr}th display; the nr. is reset to 0")
+            openBrowserOnDisplayNr = 0
+        }
+
+        GraphicsDevice[] screenDevices = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getScreenDevices()
+
+        if (openBrowserOnDisplayNr > screenDevices.length) {
+            LOG.warn("Browser is set up to be open on ${openBrowserOnDisplayNr}th display, however, the total nr. of displays is $screenDevices.length; the nr. is reset to 0")
+            openBrowserOnDisplayNr = 0
+        }
+
         int upperLeftCornerOfTheMonitor = 0
-        if (openBrowserOnMonitorNr > 1) {
-            upperLeftCornerOfTheMonitor = (int) GraphicsEnvironment
-                    .getLocalGraphicsEnvironment()
-                    .getScreenDevices()[0]
+        if (openBrowserOnDisplayNr > 1) {
+            upperLeftCornerOfTheMonitor = (int) screenDevices[1]
                     .getDefaultConfiguration()
                     .getBounds()
                     .width
@@ -75,23 +92,27 @@ public class InstaWebDriver {
      * Opens Instagram page and logs into user account passing username and password attributed to {@link InstaWebDriver} object
      */
     private void logIn() {
+        LOG.info("Log in to Instagram with primary user: $primaryUsername")
+
         // go to Instagram website
         driver.get("https://www.instagram.com/")
         // wait until "Log In" button appears, therefore the page is loaded
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log in')]]")))
 
-        // go to Log In page
-        WebElement loginButton = driver.findElement(By.xpath("//*[text() = 'Log in']")) // xpath to login button
-        loginButton.click()
-        sleep(1000)
+        // go to Log In page if sign up page opened (Instagram returns randomly sign up or log in page)
+        if (driver.findElements(By.xpath("//*[text() = 'Sign up']")).size() > 0) {
+            WebElement loginButton = driver.findElement(By.xpath("//*[text() = 'Log in']")) // xpath to login button
+            loginButton.click()
+            sleep(1000)
+        }
 
         // put username and pawword and log in
         WebElement usernameElem = driver.findElement(By.name("username"))
         usernameElem.clear()
-        usernameElem.sendKeys(loginUsername)
+        usernameElem.sendKeys(primaryUsername)
         WebElement passwordElem = driver.findElement(By.name("password"))
         passwordElem.clear()
-        passwordElem.sendKeys(loginPassword)
+        passwordElem.sendKeys(password)
         passwordElem.sendKeys(Keys.RETURN)
 
         // wait until "Log In" button disappears, therefore the user is logged in
@@ -99,12 +120,9 @@ public class InstaWebDriver {
         LOG.info("User successfully logged in")
     }
 
-    public isLoggedIn() {
-        return !("Log In" in driver.getPageSource())
+    public closeConnection() {
+        LOG.info("Close WebDriver connection")
+        driver.close()
     }
-
 }
 
-enum WEB_DRIVER_TYPE {
-    CHROME, FIREFOX
-}
