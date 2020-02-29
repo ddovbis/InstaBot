@@ -27,6 +27,7 @@ class Main implements CommandLineRunner {
     void run(String... args) throws Exception {
         LOG.info("Spring application successfully initialized")
         Date startTime = new Date()
+        // TODO: Just username and password would be enough
         String loginUsername = args[0]
         String loginPassword = args[1]
 
