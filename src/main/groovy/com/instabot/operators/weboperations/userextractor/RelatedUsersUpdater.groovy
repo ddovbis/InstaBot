@@ -86,7 +86,7 @@ class RelatedUsersUpdater {
         WebElement usersWindowButton = getUsersWindowButton(instaDriver, masterUsername, userType)
 
         int usersTotalAmount = getUsersTotalAmount(usersWindowButton)
-        LOG.info "Load all users on web page; $userType users to be loaded: $usersTotalAmount"
+        LOG.info "Load all $userType users for $masterUsername master user;  users to be loaded: $usersTotalAmount"
         if (usersTotalAmount == 0) {
             return Collections.emptyList()
         }
@@ -107,6 +107,7 @@ class RelatedUsersUpdater {
         List<WebElement> loadedUsers
         int loadedUsersAmount = 0
         int lastLoadedUsersAmount = loadedUsersAmount
+        int consecutiveFailedLoadingAttempts = 0
         while (loadedUsersAmount != usersTotalAmount) {
             // scroll down into users window to load more users
             scrollDown(usersContainer)
@@ -117,22 +118,24 @@ class RelatedUsersUpdater {
             LOG.info "$loadedUsersAmount out of $usersTotalAmount users added to WebElement list. Load more users..."
 
             // if no users have been loaded since last iteration count a new failed attempt
-            int failedLoadingAttempts = 0
             if (lastLoadedUsersAmount == loadedUsersAmount) {
-                failedLoadingAttempts++
+                LOG.warn "No new $userType users loaded; consecutive failed loading attempts: ${++consecutiveFailedLoadingAttempts}"
             }
 
             // after 3 failed attempts return the page or throw an exception if necessary
-            if (failedLoadingAttempts == 3) {
+            if (consecutiveFailedLoadingAttempts == 3) {
                 if (isNecessaryToThrowUserLoadingException(loadedUsersAmount, usersTotalAmount)) {
                     throw new UsersLoadingException("Unable to load all $userType users for $masterUsername master user; loaded $loadedUsersAmount out of $usersTotalAmount users")
                 } else {
-                    LOG.warn("Loaded $loadedUsersAmount $userType users instead of $usersTotalAmount for $masterUsername master user")
+                    LOG.warn "Finish loading $userType users for $masterUsername master user; loaded $loadedUsersAmount users instead of $usersTotalAmount"
                     return instaDriver.driver.getPageSource()
                 }
             }
 
-            lastLoadedUsersAmount = loadedUsersAmount
+            if (lastLoadedUsersAmount != loadedUsersAmount) {
+                lastLoadedUsersAmount = loadedUsersAmount
+                consecutiveFailedLoadingAttempts = 0
+            }
         }
         LOG.info "All $loadedUsersAmount $userType are loaded"
 
