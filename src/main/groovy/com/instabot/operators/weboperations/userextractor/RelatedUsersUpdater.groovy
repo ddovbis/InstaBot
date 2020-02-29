@@ -34,13 +34,12 @@ class RelatedUsersUpdater {
      * @param masterUsername - Instagram user whose followers and followed users should be updated; can be different than logged in user @param htmlDocument
      */
     void updateRelatedUsers(InstaWebDriver instaDriver, String masterUsername) {
-        LOG.info("Update related users (followers and following lists) for master user: $masterUsername")
-        if (!shouldBeUpdated(masterUsername)) {
-            LOG.info("Related users have already been updated today")
+        LocalDateTime startTime = LocalDateTime.now()
+
+        LOG.info("Start related users (followers and following lists) updater for master user: $masterUsername")
+        if (!shouldBeUpdated(masterUsername, startTime)) {
             return
         }
-
-        LocalDateTime startTime = LocalDateTime.now()
 
         // extract and update users who isFollower for master user
         String pageSourceWithAllFollowerUsersLoaded = getRelatedUsersByType(instaDriver, masterUsername, "followers")
@@ -58,18 +57,21 @@ class RelatedUsersUpdater {
      * @param masterUsername - the main user in relation to whom the rest of the users should be normalized
      * @return - true if any of related users have been updated more than one day ago, or false otherwise
      */
-    private boolean shouldBeUpdated(String masterUsername) {
+    private boolean shouldBeUpdated(String masterUsername, LocalDateTime startTime) {
+        LOG.info "Check if related users should be updated"
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
         if (allUsers.isEmpty()) {
+            LOG.info "No users found in data service; proceed with the update"
             return true
         }
 
-        LocalDateTime now = LocalDateTime.now()
         for (User user : allUsers) {
-            if (ChronoUnit.DAYS.between(user.getIsFollowedLastUpdatedAt(), now) > 0 || ChronoUnit.DAYS.between(user.getIsFollowerLastUpdatedAt(), now) > 0) {
+            if (ChronoUnit.DAYS.between(user.getIsFollowedLastUpdatedAt(), startTime) >= 1 || ChronoUnit.DAYS.between(user.getIsFollowerLastUpdatedAt(), startTime) >= 1) {
+                LOG.info "At least one related user (${user.username}) has been updated less than 1 day ago; proceed with the update"
                 return true
             }
         }
+        LOG.info "All users have been updated less than 1 day ago; no update is required"
         return false
     }
 
@@ -317,11 +319,11 @@ class RelatedUsersUpdater {
     private void normalizeRelatedUsers(String masterUsername, LocalDateTime startTime) {
         for (User user : userDataService.getAllByMasterUsername(masterUsername)) {
             boolean shouldBeUpdated = false
-            if (user.isFollowerLastUpdatedAt == null || (user.isFollowerLastUpdatedAt < startTime && user.isFollower)) {
+            if (user.isFollowerLastUpdatedAt == null || (user.isFollowerLastUpdatedAt < startTime)) {
                 user.setIsFollower(false)
                 shouldBeUpdated = true
             }
-            if (user.isFollowedLastUpdatedAt == null || (user.isFollowedLastUpdatedAt < startTime && user.isFollowed)) {
+            if (user.isFollowedLastUpdatedAt == null || (user.isFollowedLastUpdatedAt < startTime)) {
                 user.setIsFollowed(false)
                 shouldBeUpdated = true
             }
