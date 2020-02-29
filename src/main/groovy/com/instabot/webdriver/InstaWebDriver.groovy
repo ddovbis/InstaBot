@@ -1,5 +1,7 @@
 package com.instabot.webdriver
 
+import io.github.bonigarcia.wdm.DriverManagerType
+import io.github.bonigarcia.wdm.WebDriverManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.openqa.selenium.*
@@ -12,7 +14,7 @@ import java.awt.*
 
 public class InstaWebDriver {
     private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
-    private static final WebDriverType WEB_DRIVER_TYPE = WebDriverType.valueOf(System.getProperty("webdriver.type"))
+    private static final DriverManagerType DRIVER_MANAGER_TYPE = DriverManagerType.valueOf(System.getProperty("webdriver.type"))
 
     public WebDriver driver
     public JavascriptExecutor jse;
@@ -20,6 +22,11 @@ public class InstaWebDriver {
 
     private String primaryUsername
     private String password
+
+    static {
+        LOG.info "Set up WebDriverManager for driver manager type: $DRIVER_MANAGER_TYPE"
+        WebDriverManager.getInstance(DRIVER_MANAGER_TYPE).setup()
+    }
 
     public InstaWebDriver(String primaryUsername, String password) throws InterruptedException {
         this.primaryUsername = primaryUsername
@@ -36,12 +43,13 @@ public class InstaWebDriver {
 
     private void initializeWebDriver() {
         LOG.info("Initialize WebDriver")
-        if (WEB_DRIVER_TYPE == WebDriverType.CHROME) {
+
+        if (DRIVER_MANAGER_TYPE == DriverManagerType.CHROME) {
             driver = new ChromeDriver()
-        } else if (WEB_DRIVER_TYPE == WebDriverType.FIREFOX) {
+        } else if (DRIVER_MANAGER_TYPE == DriverManagerType.FIREFOX) {
             driver = new FirefoxDriver()
         } else {
-            throw new IllegalArgumentException("Unsupported WebDriver type: $WEB_DRIVER_TYPE")
+            throw new IllegalArgumentException("Unsupported WebDriver type: $DRIVER_MANAGER_TYPE")
         }
     }
 
@@ -54,12 +62,13 @@ public class InstaWebDriver {
     }
 
     private void moveBrowserToCorrectMonitor() {
-        int openBrowserOnDisplayNr = System.getProperty("open.browser.on.display.nr") as int
-
         if (GraphicsEnvironment.isHeadless()) {
             return
         }
 
+        String openBrowserOnDisplayNrStr = System.getProperty("open.browser.on.display.nr")
+        LOG.info "Open browser on a specific monitor, based on system property open.browser.on.display.nr: $openBrowserOnDisplayNrStr"
+        int openBrowserOnDisplayNr = openBrowserOnDisplayNrStr as int
         if (openBrowserOnDisplayNr < 0) {
             LOG.warn("Browser is set up to be opened on ${openBrowserOnDisplayNr}th display; the nr. is reset to 0")
             openBrowserOnDisplayNr = 0
