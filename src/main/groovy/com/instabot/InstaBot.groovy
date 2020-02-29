@@ -41,7 +41,7 @@ class InstaBot {
         relatedUsersUpdaterFrequency = ini.get("related-users-updater", "frequency", Integer.class)
     }
 
-    def start() throws InterruptedException {
+    void start() throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
             relatedUsersUpdater.updateRelatedUsers(masterUsername, relatedUsersUpdaterFrequency)

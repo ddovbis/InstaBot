@@ -1,6 +1,7 @@
 package com.instabot
 
 import com.instabot.utils.argshandler.ArgsHandler
+import com.instabot.utils.mail.MailSender
 import groovy.time.TimeCategory
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -20,6 +21,9 @@ class Main implements CommandLineRunner {
     @Autowired
     InstaBot instaBot
 
+    @Autowired
+    MailSender mailSender
+
     static void main(String[] args) throws InterruptedException {
         ArgsHandler.process(args)
         SpringApplication.run(Main.class, args)
@@ -29,6 +33,14 @@ class Main implements CommandLineRunner {
     void run(String... args) throws Exception {
         LOG.info("Spring application successfully initialized")
         Date startTime = new Date()
+
+        // TODO
+        println "Send email"
+        mailSender.send("Subject", "Message")
+        println "Email sent"
+
+        return
+
         instaBot.start()
         LOG.info "Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}"
     }
