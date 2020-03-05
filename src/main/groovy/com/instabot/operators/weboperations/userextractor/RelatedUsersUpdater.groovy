@@ -251,6 +251,7 @@ class RelatedUsersUpdater {
             Element userLinkParent = userLink.parent().parent()
             String name = userLinkParent.select("div:not(:has([title]))").first().html()
 
+            // TODO return a list, and update it separateley in a Collection of users; send the collection to be updated in dataservice at once (instead of updating each user)
             User tempUser = new User(masterUsername, username, name)
             setUserRelationToMasterUser(tempUser, relationToMasterUser)
             pushUserToDataService(tempUser)

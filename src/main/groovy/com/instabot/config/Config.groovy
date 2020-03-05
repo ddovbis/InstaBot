@@ -1,13 +1,16 @@
 package com.instabot.config
 
+import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 
 @Configuration
+@PropertySource("classpath:conf.ini")
 class Config {
     private static final Logger LOG = LogManager.getLogger(Config.class)
 
@@ -26,5 +29,10 @@ class Config {
         System.properties.load(new StringReader(systemProperties.text))
         // TODO Log each property that was loaded. It going to be a lot more useful.
         LOG.info("Successfully loaded ${System.properties.size() - systemPropertiesInitialAmount} new system properties")
+    }
+
+    @Bean
+    protected InstaWebDriver initInstaWebDriver() {
+
     }
 }
