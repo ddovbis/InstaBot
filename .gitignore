@@ -2,3 +2,5 @@
 logs/*
 target/*
 data/*
+
+*.iml

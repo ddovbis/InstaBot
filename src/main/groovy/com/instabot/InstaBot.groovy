@@ -21,7 +21,10 @@ class InstaBot {
     def start(String loginUsername, String loginPassword) throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
+            // TODO It's kind of weird that you instantiate the instaWebDriver here, then pass it as param and then just close it.
+            // I would extract the following and followers here, close the connection ASAP and pass them as parameters to RelatedUsersUpdater
             instaDriver = new InstaWebDriver(loginUsername, loginPassword)
+            //TODO lina_alexandrean should be a parameter from args, not hardcoded
             relatedUsersUpdater.updateRelatedUsers(instaDriver, "lina_alexandrean")
             instaDriver.closeConnection()
         }

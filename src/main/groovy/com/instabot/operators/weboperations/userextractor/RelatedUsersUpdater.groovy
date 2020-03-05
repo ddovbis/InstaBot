@@ -1,5 +1,8 @@
+// TODO: long package name
 package com.instabot.operators.weboperations.userextractor
 
+// TODO A good indication that this class is doing too many things is in the imports: instabot, jsoup, selenium & spring.
+// If you have good separation of concerns, you won't need jsoup and selenium imports here
 import com.instabot.data.model.user.User
 import com.instabot.data.services.user.UserDataService
 import com.instabot.utils.exceptions.user.UsersLoadingException
@@ -21,6 +24,8 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @Service
+//TODO This class does too many things. You need to separate html processing from business logic.
+// Try to convert html to entities outside this class.
 class RelatedUsersUpdater {
     private final Logger LOG = LogManager.getLogger(RelatedUsersUpdater.class)
 
