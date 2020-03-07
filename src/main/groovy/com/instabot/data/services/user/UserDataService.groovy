@@ -32,9 +32,9 @@ class UserDataService {
         if (user == null) {
             throw new NullPointerException("Attempted to save null user to database")
         } else if (exists(user)) {
-            LOG.debug "Update user ${user.toXml()}"
+            LOG.debug "Update user $user"
         } else {
-            LOG.debug "Create user ${user.toXml()}"
+            LOG.debug "Create user $user"
         }
         userRepository.save(user)
     }

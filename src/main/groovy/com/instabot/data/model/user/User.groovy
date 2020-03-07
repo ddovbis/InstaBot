@@ -9,7 +9,6 @@ import java.time.LocalDateTime
 
 // TODO If the name has changed -> change it on user
 // TODO When creating, check if in white list
-// TODO Use Lombok
 @Entity
 class User {
     @Id
@@ -171,11 +170,10 @@ class User {
         this.userStatus = userStatus
     }
 
-    // TODO NOOO! Never put such methods in Entities. Only getters and setters
-    // You can change it with a nice toString if you want.
-    public String toXml() {
+    @Override
+    String toString() {
         XmlMapper xmlMapper = new XmlMapper();
-        String xml = xmlMapper.writeValueAsString(this)
+        return xmlMapper.writeValueAsString(this)
     }
 
     @Override
