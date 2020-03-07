@@ -9,14 +9,13 @@ import java.time.LocalDateTime
 class FileHandler {
     private static final Logger LOG = LogManager.getLogger(FileHandler.class)
 
-    //TODO Just logging the error and the page source to the normal log file would be ok too
     public static void savePageSourceOnException(InstaWebDriver instaDriver) {
         if (instaDriver == null) {
             LOG.error "InstaWebDriver is null; no page source will be saved"
             return
         }
         String fileName = "page_source_${LocalDateTime.now().format("yyyyMMddmmss")}.html"
-        String filePath = "./logs/error/${instaDriver.getLoggedUsername()}/$fileName"
+        String filePath = "./logs/error/$instaDriver.primaryUsername/$fileName"
         File file = new File(filePath)
         file.getParentFile().mkdirs()
         LOG.info "Save page source on exception to file: ${file.getAbsolutePath()}"

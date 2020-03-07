@@ -8,15 +8,11 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
 class RelatedUsersExtractor {
     private final Logger LOG = LogManager.getLogger(RelatedUsersExtractor.class)
-
-    @Autowired
-    InstaWebDriver instaDriver
 
 /**
  * Updates {@link com.instabot.data.model.user.User#name} and {@link com.instabot.data.model.user.User#isFollowed} or {@link com.instabot.data.model.user.User#isFollower} parameters
@@ -37,7 +33,6 @@ class RelatedUsersExtractor {
             Element userLinkParent = userLink.parent().parent()
             String name = userLinkParent.select("div:not(:has([title]))").first().html()
 
-            // TODO return a list, and update it separateley in a Collection of users; send the collection to be updated in dataservice at once (instead of updating each user)
             User user = new User(masterUsername, username, name)
             if (extractedUserIdToUserMap.containsKey(user.id)) {
                 user = extractedUserIdToUserMap.get(user.id)
