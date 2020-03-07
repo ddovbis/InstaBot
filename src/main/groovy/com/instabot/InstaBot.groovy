@@ -1,6 +1,6 @@
 package com.instabot
 
-import com.instabot.operators.weboperations.userextractor.RelatedUsersUpdater
+import com.instabot.weboperations.userextractor.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.FileHandler
 import com.instabot.webdriver.InstaWebDriver
@@ -13,21 +13,25 @@ import org.springframework.stereotype.Component
 class InstaBot {
     private static final Logger LOG = LogManager.getLogger(InstaBot.class)
 
+    @Autowired
     private InstaWebDriver instaDriver
 
     @Autowired
     RelatedUsersUpdater relatedUsersUpdater
 
-    def start(String loginUsername, String loginPassword, String masterUsername) throws InterruptedException {
+    // TODO to be extracted from conf
+    String masterUsername = "lina_alexandrean"
+
+    def start() throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
             // TODO It's kind of weird that you instantiate the instaWebDriver here, then pass it as param and then just close it.
             // I would extract the following and followers here, close the connection ASAP and pass them as parameters to RelatedUsersUpdater
-            instaDriver = new InstaWebDriver(loginUsername, loginPassword)
-            relatedUsersUpdater.updateRelatedUsers(instaDriver, masterUsername)
+            relatedUsersUpdater.updateRelatedUsers(masterUsername)
 
             // other features here
 
+            // close InstaWebDriver connection at the end of the execution
             instaDriver.closeConnection()
         }
         catch (UsersLoadingException e) {

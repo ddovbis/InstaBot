@@ -39,6 +39,14 @@ class UserDataService {
         userRepository.save(user)
     }
 
+    public void saveAll(List<User> users) {
+        if (users == null) {
+            throw new NullPointerException("Attempted to save null user list to database")
+        }
+        LOG.info("Save ${users.size()} users to database")
+        userRepository.saveAll(users)
+    }
+
     public List<User> getAll() {
         return userRepository.findAll()
     }

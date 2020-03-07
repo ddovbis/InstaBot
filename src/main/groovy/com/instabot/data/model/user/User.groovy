@@ -43,6 +43,9 @@ class User {
         this.username = username
         this.id = masterUsername + "_" + username
         this.name = name
+
+        this.isFollower = false
+        this.isFollowed = false
     }
 
     String getMasterUsername() {
