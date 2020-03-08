@@ -85,7 +85,7 @@ class RelatedUsersUpdater {
                 return true
             }
         }
-        LOG.info "All users have been updated less than 1 day ago; no update is required"
+        LOG.info "All users have been updated less than $frequency minute(s) ago; no update is required"
         return false
     }
 

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class RelatedUsersPageLoader {
     private final Logger LOG = LogManager.getLogger(RelatedUsersPageLoader.class)
+    private final Random RANDOM = new Random()
 
     @Autowired
     InstaWebDriver instaDriver
@@ -26,6 +27,23 @@ class RelatedUsersPageLoader {
      * WARNING: sendKeys(Keys.PAGE_DOWN) feature used in this method might not work with other drivers than FireFox driver
      */
     String getPageSourceWithLoadedUsersByType(String masterUsername, String userType) throws InterruptedException {
+        int criticalFailedLoadingAttempts = 0
+        try {
+            loadUsers(masterUsername, userType, false)
+        } catch (UsersLoadingException ule) {
+            if (criticalFailedLoadingAttempts == 0) {
+                criticalFailedLoadingAttempts++
+                LOG.warn "Failed to load all $userType users for $masterUsername master user; try again in safe-mode (slower loading)"
+                loadUsers(masterUsername, userType, true)
+            } else {
+                throw ule
+            }
+        }
+
+        return instaDriver.driver.getPageSource()
+    }
+
+    private void loadUsers(String masterUsername, String userType, boolean safeMode) {
         goToUserPage(masterUsername)
 
         WebElement usersWindowButton = getUsersWindowButton(masterUsername, userType)
@@ -33,7 +51,8 @@ class RelatedUsersPageLoader {
         int usersTotalAmount = getUsersTotalAmount(usersWindowButton)
         LOG.info "Load all $userType users for $masterUsername master user;  users to be loaded: $usersTotalAmount"
         if (usersTotalAmount == 0) {
-            return Collections.emptyList()
+            LOG.info("No $userType users to be loaded")
+            return
         }
 
         // open users window, containing a list of users of a certain type (following or followers)
@@ -55,12 +74,12 @@ class RelatedUsersPageLoader {
         int consecutiveFailedLoadingAttempts = 0
         while (loadedUsersAmount != usersTotalAmount) {
             // scroll down into users window to load more users
-            scrollDown(usersContainer)
+            scrollDown(usersContainer, safeMode)
 
             // update users WebElement list and qty
             loadedUsers = instaDriver.driver.findElements(usersListPath)
             loadedUsersAmount = loadedUsers.size()
-            LOG.info "$loadedUsersAmount out of $usersTotalAmount users added to WebElement list. Load more users..."
+            LOG.info "Loaded $loadedUsersAmount out of $usersTotalAmount '$userType' users; continue loading"
 
             // if no users have been loaded since last iteration count a new failed attempt
             if (lastLoadedUsersAmount == loadedUsersAmount) {
@@ -73,7 +92,7 @@ class RelatedUsersPageLoader {
                     throw new UsersLoadingException("Unable to load all $userType users for $masterUsername master user; loaded $loadedUsersAmount out of $usersTotalAmount users")
                 } else {
                     LOG.warn "Finish loading $userType users for $masterUsername master user; loaded $loadedUsersAmount users instead of $usersTotalAmount"
-                    return instaDriver.driver.getPageSource()
+                    return
                 }
             }
 
@@ -83,8 +102,6 @@ class RelatedUsersPageLoader {
             }
         }
         LOG.info "All $loadedUsersAmount $userType are loaded"
-
-        return instaDriver.driver.getPageSource()
     }
 
     /**
@@ -151,11 +168,23 @@ class RelatedUsersPageLoader {
      * Imitates pressing PAGE_DOWN key for multiple times
      *
      * @param elementToScroll - scrollable {@link WebElement}
+     * @param safeMode - if enabled, adds sleep time before iteration and holds PAGE_DOWN key for a shorter period
      */
-    private void scrollDown(WebElement elementToScroll) {
-        for (int i in 1..100) {
-            elementToScroll.sendKeys(Keys.PAGE_DOWN)
+    private void scrollDown(WebElement elementToScroll, boolean safeMode) {
+        if (safeMode) {
+            // sleep between 0.5 and 2 seconds
+            sleep(Math.abs(RANDOM.nextInt() % (2000 - 500)) + 500)
+            // send PAGE_DOWN key 10 times (imitate short hold)
+            for (int i in 1..10) {
+                elementToScroll.sendKeys(Keys.PAGE_DOWN)
+            }
+        } else {
+            // send PAGE_DOWN key 100 times (imitate long hold)
+            for (int i in 1..100) {
+                elementToScroll.sendKeys(Keys.PAGE_DOWN)
+            }
         }
+
     }
 
     /**
