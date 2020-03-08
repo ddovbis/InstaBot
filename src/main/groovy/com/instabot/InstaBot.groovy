@@ -1,9 +1,9 @@
 package com.instabot
 
-import com.instabot.weboperations.userextractor.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.FileHandler
 import com.instabot.webdriver.InstaWebDriver
+import com.instabot.weboperations.userextractor.RelatedUsersUpdater
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.ini4j.Wini

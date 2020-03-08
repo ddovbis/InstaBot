@@ -1,13 +1,6 @@
 package com.instabot.utils.argshandler
 
 import org.apache.commons.cli.*
-import org.apache.logging.log4j.LogManager
-
-import java.lang.reflect.Method
-
-import static java.net.URL.*
-import static java.net.URL.*;
-
 
 class ArgsHandler {
     private static final OPTIONS = new Options()

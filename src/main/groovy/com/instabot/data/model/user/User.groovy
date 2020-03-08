@@ -4,10 +4,8 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 
 import javax.persistence.Entity
 import javax.persistence.Id
-import java.time.LocalDate
 import java.time.LocalDateTime
 
-// TODO When creating, check if in white list
 @Entity
 class User {
     @Id
@@ -72,7 +70,7 @@ class User {
 
     @Override
     String toString() {
-        XmlMapper xmlMapper = new XmlMapper();
+        XmlMapper xmlMapper = new XmlMapper()
         return xmlMapper.writeValueAsString(this)
     }
 
@@ -81,7 +79,7 @@ class User {
         if (o == this) {
             return true
         } else if (!(o instanceof User)) {
-            return false;
+            return false
         } else {
             return ((User) o).id == id
         }

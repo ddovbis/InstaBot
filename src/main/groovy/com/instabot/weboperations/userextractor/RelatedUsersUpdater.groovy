@@ -2,7 +2,6 @@ package com.instabot.weboperations.userextractor
 
 import com.instabot.data.model.user.User
 import com.instabot.data.services.user.UserDataService
-
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired

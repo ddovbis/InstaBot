@@ -61,7 +61,7 @@ class RelatedUsersExtractor {
 
 /**
  * Sets isFollowed or isFollowing parameters, based on {@param relationToMasterUser}
- * 
+ *
  * @param relationToMasterUser - isFollower or isFollowing
  */
     private void setUserRelationToMasterUser(User user, String relationToMasterUser) {

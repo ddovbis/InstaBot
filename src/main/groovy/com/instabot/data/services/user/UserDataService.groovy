@@ -9,26 +9,26 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserDataService {
-    private static final Logger LOG = LogManager.getLogger(UserDataService.class);
+    private static final Logger LOG = LogManager.getLogger(UserDataService.class)
 
     @Autowired
     private UserRepository userRepository
 
-    public boolean exists(User user) {
+    boolean exists(User user) {
         if (user == null) {
             return false
         }
         return exists(user.getId())
     }
 
-    public boolean exists(String id) {
+    boolean exists(String id) {
         if (id == null) {
             return false
         }
         return userRepository.existsById(id)
     }
 
-    public void save(User user) {
+    void save(User user) {
         if (user == null) {
             throw new NullPointerException("Attempted to save null user to database")
         } else if (exists(user)) {
@@ -39,7 +39,7 @@ class UserDataService {
         userRepository.save(user)
     }
 
-    public void saveAll(List<User> users) {
+    void saveAll(List<User> users) {
         if (users == null) {
             throw new NullPointerException("Attempted to save null user list to database")
         }
@@ -47,25 +47,25 @@ class UserDataService {
         userRepository.saveAll(users)
     }
 
-    public List<User> getAll() {
+    List<User> getAll() {
         return userRepository.findAll()
     }
 
-    public User get(User user) {
+    User get(User user) {
         if (user == null) {
             return null
         }
         return get(user.getId())
     }
 
-    public User get(String id) {
+    User get(String id) {
         if (id == null) {
             return null
         }
         return userRepository.findById(id).get()
     }
 
-    public List<User> getAllByMasterUsername(String masterUsername) {
+    List<User> getAllByMasterUsername(String masterUsername) {
         if (masterUsername == null) {
             return null
         }

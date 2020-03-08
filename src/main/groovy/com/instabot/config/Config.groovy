@@ -11,8 +11,6 @@ class Config {
 
     @Bean("loadSystemProperties")
     protected loadSystemProperties() {
-        // TODO Don't use an absolute path here!!! Try to read system.properties as a resource on the classpath.
-        //   This way, you can package you app as a jar, but still put system.properties on the classpath and it will get loaded.
         File systemProperties = new File("./src/main/resources/system.properties")
 
         LOG.info("Load properties from ${systemProperties.getAbsolutePath()}")

@@ -20,7 +20,7 @@ class Main implements CommandLineRunner {
     @Autowired
     InstaBot instaBot
 
-    public static void main(String[] args) throws InterruptedException {
+    static void main(String[] args) throws InterruptedException {
         ArgsHandler.process(args)
         SpringApplication.run(Main.class, args)
     }

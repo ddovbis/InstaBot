@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 class FileHandler {
     private static final Logger LOG = LogManager.getLogger(FileHandler.class)
 
-    public static void savePageSourceOnException(InstaWebDriver instaDriver) {
+    static void savePageSourceOnException(InstaWebDriver instaDriver) {
         if (instaDriver == null) {
             LOG.error "InstaWebDriver is null; no page source will be saved"
             return

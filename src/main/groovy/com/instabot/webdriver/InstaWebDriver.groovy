@@ -17,18 +17,18 @@ import java.awt.*
 
 @Component
 @DependsOn("loadSystemProperties")
-public class InstaWebDriver {
+class InstaWebDriver {
     private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
 
     private DriverManagerType driverManagerType
     public WebDriver driver
-    public JavascriptExecutor jse;
+    public JavascriptExecutor jse
     public WebDriverWait wait
 
     public String primaryUsername
     private String password
 
-    public InstaWebDriver() {
+    InstaWebDriver() {
         LOG.info("Initialize InstaWebDriver")
         extractCredentials()
         initializeDriverManager()
@@ -151,7 +151,7 @@ public class InstaWebDriver {
         LOG.info("User successfully logged in")
     }
 
-    public closeConnection() {
+    void closeConnection() {
         LOG.info("Close WebDriver connection")
         driver.close()
     }
