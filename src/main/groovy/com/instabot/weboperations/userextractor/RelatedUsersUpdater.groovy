@@ -27,11 +27,11 @@ class RelatedUsersUpdater {
      *
      * @param masterUsername - Instagram user whose followers and followed users should be updated; can be different than logged in user @param htmlDocument
      */
-    void updateRelatedUsers(String masterUsername) {
+    void updateRelatedUsers(String masterUsername, Integer frequency) {
         LocalDateTime startTime = LocalDateTime.now()
 
         LOG.info("Start related users (followers and following lists) updater for master user: $masterUsername")
-        if (!shouldBeUpdated(masterUsername, startTime)) {
+        if (!shouldBeUpdated(masterUsername, frequency, startTime)) {
             return
         }
 
@@ -45,14 +45,20 @@ class RelatedUsersUpdater {
         String pageSourceWithAllFollowingUsersLoaded = relatedUsersPageLoader.getPageSourceWithLoadedUsersByType(masterUsername, "following")
         relatedUsersExtractor.extractRelatedUsersFromPageSource(extractedUserIdToUserMap, pageSourceWithAllFollowingUsersLoaded, masterUsername, "isFollowed")
 
+        // set isFollower and isFollowed to 'false' if the value has not been updated since starting users-updating process
+        normalizeUsers(extractedUserIdToUserMap, startTime)
+
         // update stored users
-        Map<String, User> updatedUserIdToUserMap = getMapWithUpdatedStoredUsers(extractedUserIdToUserMap, masterUsername)
+        Map<String, User> toBeUpdatedUserIdToUserMap = getMapWithUpdatedStoredUsers(extractedUserIdToUserMap, masterUsername)
+        int storedUsersToBeUpdated = toBeUpdatedUserIdToUserMap.size()
+        LOG.info("Added $storedUsersToBeUpdated stored related users to the updater container")
 
         // add new users to be saved
-        addMissingUsersToMap(updatedUserIdToUserMap, extractedUserIdToUserMap)
+        addMissingUsersToMap(toBeUpdatedUserIdToUserMap, extractedUserIdToUserMap)
+        LOG.info("Added ${toBeUpdatedUserIdToUserMap.size() - storedUsersToBeUpdated} new related users to the updater container")
 
         // update users in dataservice
-        List<User> updatedUsers = updatedUserIdToUserMap.values().collect()
+        List<User> updatedUsers = toBeUpdatedUserIdToUserMap.values().collect()
         userDataService.saveAll(updatedUsers)
     }
 
@@ -60,22 +66,56 @@ class RelatedUsersUpdater {
      * @param masterUsername - main user in relation to whom the rest of the users should be normalized
      * @return - true if any of related users have been updated more than one day ago, or false otherwise
      */
-    private boolean shouldBeUpdated(String masterUsername, LocalDateTime startTime) {
+    private boolean shouldBeUpdated(String masterUsername, Integer frequency, LocalDateTime startTime) {
         LOG.info "Check if related users should be updated"
+
+        if (frequency == null || frequency == 0) {
+            LOG.info("No related-users-updater frequency is set; proceed with the update")
+        }
+
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
-        if (allUsers.isEmpty()) {
+        if (allUsers == null || allUsers.isEmpty()) {
             LOG.info "No users found in data service; proceed with the update"
             return true
         }
 
         for (User user : allUsers) {
-            if (ChronoUnit.DAYS.between(user.getIsFollowedLastUpdatedAt(), startTime) >= 0 || ChronoUnit.DAYS.between(user.getIsFollowerLastUpdatedAt(), startTime) >= 0) {
-                LOG.info "At least one related user (${user.username}) has been updated less than 1 day ago; proceed with the update"
+            if (ChronoUnit.MINUTES.between(user.getIsFollowedLastUpdatedAt(), startTime) >= frequency || ChronoUnit.MINUTES.between(user.getIsFollowerLastUpdatedAt(), startTime) >= frequency) {
+                LOG.info "At least one related user (${user.username}) has been updated less than $frequency minute(s) ago; proceed with the update"
                 return true
             }
         }
         LOG.info "All users have been updated less than 1 day ago; no update is required"
         return false
+    }
+
+    /**
+     * If isFollowed or isFollower last updated time is less than {@param startTime}, it means that the user is not
+     * in the specified list anymore, so the value should be set to false
+     *
+     * @param toBeNormalizedUserIdToUserMap - map containing users that should be normalized
+     * @param startTime - time when users-update process started
+     */
+    private void normalizeUsers(Map<String, User> toBeNormalizedUserIdToUserMap, LocalDateTime startTime) {
+        LOG.info "Normalize, if necessary, isFollower and isFollowing parameters for ${toBeNormalizedUserIdToUserMap.size()} users"
+
+        boolean isNormalized = false
+        int normalizedUsers = 0
+        toBeNormalizedUserIdToUserMap.each { userId, user ->
+            isNormalized = false
+            if (user.isFollowedLastUpdatedAt == null || user.isFollowedLastUpdatedAt < startTime) {
+                user.setIsFollowed(false)
+                isNormalized = true
+            }
+            if (user.isFollowerLastUpdatedAt == null || user.getIsFollowerLastUpdatedAt() < startTime) {
+                user.setIsFollower(false)
+                isNormalized = true
+            }
+            if (isNormalized) {
+                normalizedUsers++
+            }
+        }
+        LOG.info("Normalized $normalizedUsers users")
     }
 
     /**

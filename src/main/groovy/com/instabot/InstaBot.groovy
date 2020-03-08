@@ -22,6 +22,7 @@ class InstaBot {
     private RelatedUsersUpdater relatedUsersUpdater
 
     String masterUsername
+    int relatedUsersUpdaterFrequency
 
     protected InstaBot() {
         initialize()
@@ -36,13 +37,14 @@ class InstaBot {
         }
 
         Wini ini = new Wini(configurationFile)
-        masterUsername = ini.get("master-user", "username", String.class)
+        masterUsername = ini.get("related-users-updater", "master-username", String.class)
+        relatedUsersUpdaterFrequency = ini.get("related-users-updater", "frequency", Integer.class)
     }
 
     def start() throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
-            relatedUsersUpdater.updateRelatedUsers(masterUsername)
+            relatedUsersUpdater.updateRelatedUsers(masterUsername, relatedUsersUpdaterFrequency)
 
             // other features here
 

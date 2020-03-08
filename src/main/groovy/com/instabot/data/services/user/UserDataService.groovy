@@ -43,7 +43,7 @@ class UserDataService {
         if (users == null) {
             throw new NullPointerException("Attempted to save null user list to database")
         }
-        LOG.info("Save ${users.size()} users to database")
+        LOG.info("Save ${users.size()} (crate/update) users to database")
         userRepository.saveAll(users)
     }
 

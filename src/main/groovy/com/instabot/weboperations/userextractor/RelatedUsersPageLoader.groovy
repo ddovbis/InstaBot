@@ -68,7 +68,7 @@ class RelatedUsersPageLoader {
             }
 
             // after 3 failed attempts return the page or throw an exception if necessary
-            if (consecutiveFailedLoadingAttempts == 3) {
+            if (consecutiveFailedLoadingAttempts == 5) {
                 if (isNecessaryToThrowUserLoadingException(loadedUsersAmount, usersTotalAmount)) {
                     throw new UsersLoadingException("Unable to load all $userType users for $masterUsername master user; loaded $loadedUsersAmount out of $usersTotalAmount users")
                 } else {

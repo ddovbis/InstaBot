@@ -25,6 +25,7 @@ class RelatedUsersExtractor {
  */
     void extractRelatedUsersFromPageSource(Map<String, User> extractedUserIdToUserMap, String pageSource, String masterUsername, String relationToMasterUser) {
         LOG.info("Extract loaded $relationToMasterUser users from page source")
+        int amountOfUsersStart = extractedUserIdToUserMap.size()
         for (Element singleUserContainer : getSingleUserContainerList(pageSource)) {
             // extract username from link's text (ignore elements with images)
             Element userLink = singleUserContainer.select("a[href]:not(:has(img))").first()
@@ -41,6 +42,7 @@ class RelatedUsersExtractor {
             }
             setUserRelationToMasterUser(user, relationToMasterUser)
         }
+        LOG.info("Extracted ${extractedUserIdToUserMap.size() - amountOfUsersStart} users")
     }
 
     /**
@@ -59,6 +61,8 @@ class RelatedUsersExtractor {
 
 /**
  * Sets isFollowed or isFollowing parameters, based on {@param relationToMasterUser}
+ * 
+ * @param relationToMasterUser - isFollower or isFollowing
  */
     private void setUserRelationToMasterUser(User user, String relationToMasterUser) {
         if (relationToMasterUser == "isFollower") {

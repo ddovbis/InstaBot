@@ -57,8 +57,8 @@ public class InstaWebDriver {
         }
 
         Wini ini = new Wini(configurationFile)
-        primaryUsername = ini.get("primary-user", "username", String.class)
-        password = ini.get("primary-user", "password", String.class)
+        primaryUsername = ini.get("general", "primary-username", String.class)
+        password = ini.get("general", "password", String.class)
     }
 
 
