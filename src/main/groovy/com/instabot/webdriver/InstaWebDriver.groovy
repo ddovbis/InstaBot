@@ -4,52 +4,73 @@ import io.github.bonigarcia.wdm.DriverManagerType
 import io.github.bonigarcia.wdm.WebDriverManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.ini4j.Wini
 import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.springframework.context.annotation.DependsOn
+import org.springframework.stereotype.Component
 
 import java.awt.*
 
-public class InstaWebDriver {
+@Component
+@DependsOn("loadSystemProperties")
+class InstaWebDriver {
     private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
-    private static final DriverManagerType DRIVER_MANAGER_TYPE = DriverManagerType.valueOf(System.getProperty("webdriver.type"))
 
+    private DriverManagerType driverManagerType
     public WebDriver driver
-    public JavascriptExecutor jse;
+    public JavascriptExecutor jse
     public WebDriverWait wait
 
-    private String primaryUsername
+    public String primaryUsername
     private String password
 
-    static {
-        LOG.info "Set up WebDriverManager for driver manager type: $DRIVER_MANAGER_TYPE"
-        WebDriverManager.getInstance(DRIVER_MANAGER_TYPE).setup()
-    }
-
-    public InstaWebDriver(String primaryUsername, String password) throws InterruptedException {
-        this.primaryUsername = primaryUsername
-        this.password = password
-
-        LOG.info("Initialize InstaWebDriver for primary user: $primaryUsername")
+    InstaWebDriver() {
+        LOG.info("Initialize InstaWebDriver")
+        extractCredentials()
+        initializeDriverManager()
         initializeWebDriver()
         initializeWebDriverWait()
         initializeJavaScriptExecutor()
         moveBrowserToCorrectMonitor()
         maximizeBrowserWindow()
         logIn()
+        LOG.info("InstaWebDriver successfully initialized for primary user: $primaryUsername")
     }
+
+    private void initializeDriverManager() {
+        LOG.info("Initialize WebDriverManager")
+        driverManagerType = DriverManagerType.valueOf(System.getProperty("webdriver.type"))
+        WebDriverManager.getInstance(driverManagerType).setup()
+        LOG.info "WebDriverManager Successfully initialized for driver manager type: $driverManagerType"
+    }
+
+    private void extractCredentials() {
+        LOG.info("Extract primary-user credentials")
+        String configurationFilePath = System.getProperty("instabot.conf.path")
+        File configurationFile = new File(configurationFilePath)
+        if (configurationFile == null) {
+            throw new FileNotFoundException("Could not find insta-bot configuration file by path: $configurationFilePath")
+        }
+
+        Wini ini = new Wini(configurationFile)
+        primaryUsername = ini.get("general", "primary-username", String.class)
+        password = ini.get("general", "password", String.class)
+    }
+
 
     private void initializeWebDriver() {
         LOG.info("Initialize WebDriver")
 
-        if (DRIVER_MANAGER_TYPE == DriverManagerType.CHROME) {
+        if (driverManagerType == DriverManagerType.CHROME) {
             driver = new ChromeDriver()
-        } else if (DRIVER_MANAGER_TYPE == DriverManagerType.FIREFOX) {
+        } else if (driverManagerType == DriverManagerType.FIREFOX) {
             driver = new FirefoxDriver()
         } else {
-            throw new IllegalArgumentException("Unsupported WebDriver type: $DRIVER_MANAGER_TYPE")
+            throw new IllegalArgumentException("Unsupported WebDriver type: $driverManagerType")
         }
     }
 
@@ -109,7 +130,8 @@ public class InstaWebDriver {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log in')]]")))
 
         // go to Log In page if sign up page opened (Instagram returns randomly sign up or log in page)
-        if (driver.findElements(By.xpath("//*[text() = 'Sign up']")).size() > 0) {
+//        if (driver.findElements(By.xpath("//*[text() = 'Sign up']")).size() > 0) {
+        if (driver.findElements(By.xpath("//button[text()='Sign up']")).size() > 0) {
             WebElement loginButton = driver.findElement(By.xpath("//*[text() = 'Log in']")) // xpath to login button
             loginButton.click()
             sleep(1000)
@@ -129,7 +151,7 @@ public class InstaWebDriver {
         LOG.info("User successfully logged in")
     }
 
-    public closeConnection() {
+    void closeConnection() {
         LOG.info("Close WebDriver connection")
         driver.close()
     }

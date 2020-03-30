@@ -1,5 +1,6 @@
 package com.instabot
 
+import com.instabot.utils.argshandler.ArgsHandler
 import groovy.time.TimeCategory
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -19,7 +20,8 @@ class Main implements CommandLineRunner {
     @Autowired
     InstaBot instaBot
 
-    public static void main(String[] args) throws InterruptedException {
+    static void main(String[] args) throws InterruptedException {
+        ArgsHandler.process(args)
         SpringApplication.run(Main.class, args)
     }
 
@@ -27,11 +29,7 @@ class Main implements CommandLineRunner {
     void run(String... args) throws Exception {
         LOG.info("Spring application successfully initialized")
         Date startTime = new Date()
-        // TODO: Just username and password would be enough
-        String loginUsername = args[0]
-        String loginPassword = args[1]
-
-        instaBot.start(loginUsername, loginPassword)
+        instaBot.start()
         LOG.info "Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}"
     }
 }
