@@ -1,24 +1,28 @@
 package com.instabot.webdriver
 
+import com.instabot.config.InstaBotConfig
 import io.github.bonigarcia.wdm.DriverManagerType
 import io.github.bonigarcia.wdm.WebDriverManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.ini4j.Wini
 import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 import java.awt.*
 
 @Component
-@DependsOn("loadSystemProperties")
 class InstaWebDriver {
     private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
+
+    @Autowired
+    InstaBotConfig instaBotConfig
 
     private DriverManagerType driverManagerType
     public WebDriver driver
@@ -28,7 +32,14 @@ class InstaWebDriver {
     public String primaryUsername
     private String password
 
-    InstaWebDriver() {
+    @Bean("initializeInstaWebDriver")
+    @DependsOn("initializeInstaBotConfig")
+    private void initialize() {
+        if (isInstaWebDriverDisabled()) {
+            LOG.info("InstaWebDriver is disabled and will not be initialized")
+            return
+        }
+
         LOG.info("Initialize InstaWebDriver")
         extractCredentials()
         initializeDriverManager()
@@ -41,26 +52,27 @@ class InstaWebDriver {
         LOG.info("InstaWebDriver successfully initialized for primary user: $primaryUsername")
     }
 
+    private isInstaWebDriverDisabled() {
+        Boolean isDisabled = instaBotConfig.getIniFile().get("general", "disable-insta-web-driver", Boolean.class)
+        if (isDisabled == null) {
+            return false
+        }
+        return isDisabled
+    }
+
+    private void extractCredentials() {
+        LOG.info("Extract primary-user credentials")
+
+        primaryUsername = instaBotConfig.getIniFile().get("general", "primary-username", String.class)
+        password = instaBotConfig.getIniFile().get("general", "password", String.class)
+    }
+
     private void initializeDriverManager() {
         LOG.info("Initialize WebDriverManager")
         driverManagerType = DriverManagerType.valueOf(System.getProperty("webdriver.type"))
         WebDriverManager.getInstance(driverManagerType).setup()
         LOG.info "WebDriverManager Successfully initialized for driver manager type: $driverManagerType"
     }
-
-    private void extractCredentials() {
-        LOG.info("Extract primary-user credentials")
-        String configurationFilePath = System.getProperty("instabot.conf.path")
-        File configurationFile = new File(configurationFilePath)
-        if (configurationFile == null) {
-            throw new FileNotFoundException("Could not find insta-bot configuration file by path: $configurationFilePath")
-        }
-
-        Wini ini = new Wini(configurationFile)
-        primaryUsername = ini.get("general", "primary-username", String.class)
-        password = ini.get("general", "password", String.class)
-    }
-
 
     private void initializeWebDriver() {
         LOG.info("Initialize WebDriver")
@@ -153,7 +165,9 @@ class InstaWebDriver {
 
     void closeConnection() {
         LOG.info("Close WebDriver connection")
-        driver.close()
+        if (driver != null) {
+            driver.close()
+        }
     }
 }
 

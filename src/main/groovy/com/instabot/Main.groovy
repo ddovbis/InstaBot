@@ -28,8 +28,10 @@ class Main implements CommandLineRunner {
     @Override
     void run(String... args) throws Exception {
         LOG.info("Spring application successfully initialized")
+
         Date startTime = new Date()
         instaBot.start()
+
         LOG.info "Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}"
     }
 }
