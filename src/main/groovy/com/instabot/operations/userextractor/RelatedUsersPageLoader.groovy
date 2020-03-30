@@ -1,4 +1,4 @@
-package com.instabot.weboperations.userextractor
+package com.instabot.operations.userextractor
 
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.webdriver.InstaWebDriver

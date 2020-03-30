@@ -1,50 +1,50 @@
 package com.instabot
 
+import com.instabot.config.InstaBotConfig
+import com.instabot.operations.reporters.RelatedUsersReporter
+import com.instabot.operations.userextractor.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
-import com.instabot.utils.filehandler.FileHandler
+import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
-import com.instabot.weboperations.userextractor.RelatedUsersUpdater
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.ini4j.Wini
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 @Component
-@DependsOn("loadSystemProperties")
+@DependsOn("initializeInstaBotConfig")
 class InstaBot {
     private static final Logger LOG = LogManager.getLogger(InstaBot.class)
 
     @Autowired
+    private InstaBotConfig initializeInstaBotConfig
+    @Autowired
     private InstaWebDriver instaDriver
     @Autowired
     private RelatedUsersUpdater relatedUsersUpdater
+    @Autowired
+    private RelatedUsersReporter relatedUsersReporter
 
     String masterUsername
-    int relatedUsersUpdaterFrequency
 
-    protected InstaBot() {
-        initialize()
-    }
-
+    @Bean("initializeInstaBot")
+    @DependsOn("initializeInstaBotConfig")
     private void initialize() {
         LOG.info("Initialize InstaBot")
-        String configurationFilePath = System.getProperty("instabot.conf.path")
-        File configurationFile = new File(configurationFilePath)
-        if (configurationFile == null) {
-            throw new FileNotFoundException("Could not find insta-bot configuration file by path: $configurationFilePath")
-        }
-
-        Wini ini = new Wini(configurationFile)
-        masterUsername = ini.get("related-users-updater", "master-username", String.class)
-        relatedUsersUpdaterFrequency = ini.get("related-users-updater", "frequency", Integer.class)
+        masterUsername = initializeInstaBotConfig.getIniFile().get("related-users", "master-username", String.class)
     }
 
     void start() throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
-            relatedUsersUpdater.updateRelatedUsers(masterUsername, relatedUsersUpdaterFrequency)
+
+            // update related users in database
+            relatedUsersUpdater.updateRelatedUsers(masterUsername)
+
+            // send related users report
+            relatedUsersReporter.sendReport(masterUsername)
 
             // other features here
 
@@ -53,7 +53,7 @@ class InstaBot {
         }
         catch (UsersLoadingException e) {
             LOG.error("Could not load all users", e)
-            FileHandler.savePageSourceOnException(instaDriver)
+            PageSourceSaver.savePageSourceOnException(instaDriver)
             throw e
         }
     }

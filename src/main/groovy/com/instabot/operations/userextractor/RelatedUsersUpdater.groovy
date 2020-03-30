@@ -1,10 +1,13 @@
-package com.instabot.weboperations.userextractor
+package com.instabot.operations.userextractor
 
+import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
 import com.instabot.data.services.user.UserDataService
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Service
 
 import java.time.LocalDateTime
@@ -15,22 +18,33 @@ class RelatedUsersUpdater {
     private final Logger LOG = LogManager.getLogger(RelatedUsersUpdater.class)
 
     @Autowired
+    private InstaBotConfig initializeInstaBotConfig
+    @Autowired
     private UserDataService userDataService
     @Autowired
     private RelatedUsersPageLoader relatedUsersPageLoader
     @Autowired
     private RelatedUsersExtractor relatedUsersExtractor
 
+    private Integer updateFrequency
+
+    @Bean("initializeRelatedUsersUpdater")
+    @DependsOn("initializeInstaBotConfig")
+    private void initialize() {
+        LOG.info("Initialize RelatedUsersUpdater")
+        updateFrequency = initializeInstaBotConfig.getIniFile().get("related-users", "update-frequency", Integer.class)
+    }
+
     /**
      * Extracts all followed and and the users being followd by the master user and saves or updates them in database
      *
      * @param masterUsername - Instagram user whose followers and followed users should be updated; can be different than logged in user @param htmlDocument
      */
-    void updateRelatedUsers(String masterUsername, Integer frequency) {
+    void updateRelatedUsers(String masterUsername) {
         LocalDateTime startTime = LocalDateTime.now()
 
         LOG.info("Start related users (followers and following lists) updater for master user: $masterUsername")
-        if (!shouldBeUpdated(masterUsername, frequency, startTime)) {
+        if (!shouldBeUpdated(masterUsername, startTime)) {
             return
         }
 
@@ -65,11 +79,11 @@ class RelatedUsersUpdater {
      * @param masterUsername - main user in relation to whom the rest of the users should be normalized
      * @return - true if any of related users have been updated more than one day ago, or false otherwise
      */
-    private boolean shouldBeUpdated(String masterUsername, Integer frequency, LocalDateTime startTime) {
+    private boolean shouldBeUpdated(String masterUsername, LocalDateTime startTime) {
         LOG.info "Check if related users should be updated"
 
-        if (frequency == null || frequency == 0) {
-            LOG.info("No related-users-updater frequency is set; proceed with the update")
+        if (updateFrequency == null || updateFrequency == 0) {
+            LOG.info("No related-users updater-frequency is set; updated will not be performed")
         }
 
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
@@ -79,12 +93,12 @@ class RelatedUsersUpdater {
         }
 
         for (User user : allUsers) {
-            if (ChronoUnit.MINUTES.between(user.getIsFollowedLastUpdatedAt(), startTime) >= frequency || ChronoUnit.MINUTES.between(user.getIsFollowerLastUpdatedAt(), startTime) >= frequency) {
-                LOG.info "At least one related user (${user.username}) has been updated less than $frequency minute(s) ago; proceed with the update"
+            if (ChronoUnit.MINUTES.between(user.getIsFollowedLastUpdatedAt(), startTime) >= updateFrequency || ChronoUnit.MINUTES.between(user.getIsFollowerLastUpdatedAt(), startTime) >= updateFrequency) {
+                LOG.info "At least one related user (${user.username}) has been updated less than $updateFrequency minute(s) ago; proceed with the update"
                 return true
             }
         }
-        LOG.info "All users have been updated less than $frequency minute(s) ago; no update is required"
+        LOG.info "All users have been updated less than $updateFrequency minute(s) ago; no update is required"
         return false
     }
 

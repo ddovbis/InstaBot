@@ -1,4 +1,4 @@
-package com.instabot.weboperations.userextractor
+package com.instabot.operations.userextractor
 
 import com.instabot.data.model.user.User
 import com.instabot.webdriver.InstaWebDriver
