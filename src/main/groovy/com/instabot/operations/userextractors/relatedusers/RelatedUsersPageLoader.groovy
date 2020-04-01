@@ -1,5 +1,6 @@
-package com.instabot.operations.userextractor
+package com.instabot.operations.userextractors.relatedusers
 
+import com.instabot.operations.helper.OperationsHelper
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
@@ -18,6 +19,8 @@ class RelatedUsersPageLoader {
 
     @Autowired
     InstaWebDriver instaDriver
+    @Autowired
+    OperationsHelper operationsHelper
 
     /**
      * Goes to master user page, opens Following or Follower (depending on {@param userType} window and scrolls down until all users are loaded to html
@@ -44,7 +47,7 @@ class RelatedUsersPageLoader {
     }
 
     private void loadUsers(String masterUsername, String userType, boolean safeMode) {
-        goToUserPage(masterUsername)
+        operationsHelper.goToUserPage(masterUsername)
 
         WebElement usersWindowButton = getUsersWindowButton(masterUsername, userType)
 
@@ -102,14 +105,6 @@ class RelatedUsersPageLoader {
             }
         }
         LOG.info "All $loadedUsersAmount $userType are loaded"
-    }
-
-    /**
-     * @param instaDriver - @{link InstaWebDriver} logged in to Instagram
-     * @param masterUsername - the target user whose page should be opened
-     */
-    private void goToUserPage(String masterUsername) {
-        instaDriver.driver.get("https://www.instagram.com/" + masterUsername)
     }
 
     /**

@@ -23,12 +23,13 @@ class User {
     LocalDateTime becameUnfollowedAt
 
     int nrOfLikes
-    int targetNrOfLikes
+    int targetedNrOfLikes
     int nrOfComments
-    int targetNrOfComments
+    int targetedNrOfComments
 
     LocalDateTime processedAt
     UserStatus userStatus
+    // TODO Replace by User status list: if LIKED && COMMENTED, add PROCESSED;
 
     protected User() {
 

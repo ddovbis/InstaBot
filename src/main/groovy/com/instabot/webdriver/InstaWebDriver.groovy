@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger
 import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
+import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,8 +27,9 @@ class InstaWebDriver {
 
     private DriverManagerType driverManagerType
     public WebDriver driver
-    public JavascriptExecutor jse
     public WebDriverWait wait
+    public JavascriptExecutor jse
+    public Actions actions
 
     public String primaryUsername
     private String password
@@ -46,6 +48,7 @@ class InstaWebDriver {
         initializeWebDriver()
         initializeWebDriverWait()
         initializeJavaScriptExecutor()
+        initializeActions()
         moveBrowserToCorrectMonitor()
         maximizeBrowserWindow()
         logIn()
@@ -86,12 +89,16 @@ class InstaWebDriver {
         }
     }
 
+    private void initializeWebDriverWait() {
+        wait = new WebDriverWait(driver, 10)
+    }
+
     private void initializeJavaScriptExecutor() {
         jse = (JavascriptExecutor) driver
     }
 
-    private void initializeWebDriverWait() {
-        wait = new WebDriverWait(driver, 10)
+    private void initializeActions() {
+        actions = new Actions(driver)
     }
 
     private void moveBrowserToCorrectMonitor() {
@@ -142,7 +149,6 @@ class InstaWebDriver {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log in')]]")))
 
         // go to Log In page if sign up page opened (Instagram returns randomly sign up or log in page)
-//        if (driver.findElements(By.xpath("//*[text() = 'Sign up']")).size() > 0) {
         if (driver.findElements(By.xpath("//button[text()='Sign up']")).size() > 0) {
             WebElement loginButton = driver.findElement(By.xpath("//*[text() = 'Log in']")) // xpath to login button
             loginButton.click()

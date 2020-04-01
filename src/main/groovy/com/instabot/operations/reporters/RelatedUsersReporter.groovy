@@ -34,8 +34,8 @@ class RelatedUsersReporter {
     }
 
     void sendReport(String masterUsername) {
-        if (!sendReport) {
-            LOG.debug("Report sending is desabled; no report will be sent for related users")
+        if (!sendReport) { // TODO: Or user updated recently
+            LOG.debug("Report sending is disabled; no report will be sent for related users")
             return
         } else {
             LOG.info("Compute and send related users report")

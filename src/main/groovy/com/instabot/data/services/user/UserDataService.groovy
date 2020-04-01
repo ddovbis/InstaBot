@@ -71,4 +71,41 @@ class UserDataService {
         }
         return userRepository.findByMasterUsername(masterUsername)
     }
+
+    List<User> getAllToBeProcessedByMasterUsername(String masterUsername) {
+        if (masterUsername == null) {
+            return null
+        }
+        return getAllByMasterUsername(masterUsername).findAll({ user ->
+            ((user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0) ||
+                    ((user.nrOfComments != user.targetedNrOfComments) || user.targetedNrOfComments == 0)
+        })
+    }
+
+    List<User> getAllToBeLikedByMasterUsername(String masterUsername) {
+        if (masterUsername == null) {
+            return null
+        }
+        LOG.info "Get all users whose posts should be liked by master user: $masterUsername"
+
+        List<User> allRelatedUsers = getAllByMasterUsername(masterUsername)
+        LOG.info "Total nr. of related users: ${allRelatedUsers.size()}"
+
+        // TODO && status != processed
+        List<User> allRelatedUsersToBeLiked = allRelatedUsers.findAll({ user ->
+            (user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0
+        })
+        LOG.info "Total nr. of users whose posts should be liked: ${allRelatedUsersToBeLiked.size()}"
+
+        return allRelatedUsersToBeLiked
+    }
+
+    List<User> getAllToBeCommentedByMasterUsername(String masterUsername) {
+        if (masterUsername == null) {
+            return null
+        }
+        return getAllByMasterUsername(masterUsername).findAll({ user ->
+            ((user.nrOfComments != user.targetedNrOfComments) || user.targetedNrOfComments == 0)
+        })
+    }
 }

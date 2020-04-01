@@ -2,7 +2,8 @@ package com.instabot
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.operations.reporters.RelatedUsersReporter
-import com.instabot.operations.userextractor.RelatedUsersUpdater
+import com.instabot.operations.userextractors.relatedusers.RelatedUsersUpdater
+import com.instabot.operations.userprocessors.relatedusers.RelatedUsersProcessor
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
@@ -26,6 +27,8 @@ class InstaBot {
     private RelatedUsersUpdater relatedUsersUpdater
     @Autowired
     private RelatedUsersReporter relatedUsersReporter
+    @Autowired
+    RelatedUsersProcessor relatedUsersProcessor
 
     String masterUsername
 
@@ -45,6 +48,9 @@ class InstaBot {
 
             // send related users report
             relatedUsersReporter.sendReport(masterUsername)
+
+            // process related users (like/comment posts)
+            relatedUsersProcessor.processRelatedUsers(masterUsername)
 
             // other features here
 

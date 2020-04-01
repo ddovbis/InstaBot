@@ -18,12 +18,11 @@
     <version>1.0</version>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all -->
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>3.0.1</version>
-            <type>pom</type>
+            <artifactId>groovy</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
@@ -178,10 +177,12 @@
                 </dependencies>
             </plugin>
             <plugin>
+                <!-- required to get plugin to compile tests when no src/main/java dir exists -->
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-eclipse-compiler</artifactId>
                 <version>${groovy.eclipse.compiler.plugin.version}</version>
-                <extensions>true</extensions>  <!-- required to get plugin to compile tests when no src/main/java dir exists -->
+                <extensions>true
+                </extensions>
             </plugin>
         </plugins>
     </build>
