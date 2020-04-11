@@ -24,9 +24,4 @@ class InstaBotConfig {
         iniFile = new Wini(configurationFile)
         LOG.info("InstaBot configuration file successfully initialized")
     }
-
-    public getIniFile() {
-        return iniFile
-    }
-
 }
