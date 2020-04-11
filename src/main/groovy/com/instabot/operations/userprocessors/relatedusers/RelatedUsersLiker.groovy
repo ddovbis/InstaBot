@@ -40,11 +40,11 @@ class RelatedUsersLiker {
     }
 
     void likeUserPosts(User user) {
-        LOG.info "Start processing post likes for user: $user.username"
+        LOG.info("Start processing post likes for user: $user.username")
         setTargetNrOfLikes(user)
 
         if (user.nrOfLikes >= user.targetedNrOfLikes) {
-            LOG.info "User $user.username has $user.nrOfLikes out of $user.targetedNrOfLikes posts liked; no post likes processing is required"
+            LOG.info("User $user.username has $user.nrOfLikes out of $user.targetedNrOfLikes posts liked; no post likes processing is required")
             return
         }
 
@@ -91,7 +91,7 @@ class RelatedUsersLiker {
         if (user.targetedNrOfLikes == 0 || user.targetedNrOfLikes < targetedNrOfLikesMin || user.targetedNrOfLikes > targetedNrOfLikesMax) {
             // set a random nr. between minimum and maximum nr. of targeted likes
             user.targetedNrOfLikes = operationsHelper.getRandomInt(targetedNrOfLikesMin, targetedNrOfLikesMax)
-            LOG.info "Targeted nr. of likes for user $user.username was set to: $user.targetedNrOfLikes"
+            LOG.info("Targeted nr. of likes for user $user.username was set to: $user.targetedNrOfLikes")
             userDataService.save(user)
         }
     }

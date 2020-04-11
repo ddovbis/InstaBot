@@ -2,11 +2,8 @@ package com.instabot.config
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.ini4j.Wini
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.DependsOn
-import org.springframework.stereotype.Component
 
 @Configuration
 class Config {
@@ -19,9 +16,9 @@ class Config {
         LOG.info("Load properties from ${systemProperties.getAbsolutePath()}")
         Properties newProperties = new Properties()
         newProperties.load(new StringReader(systemProperties.text))
-        LOG.info "Loaded ${newProperties.size()} properties"
+        LOG.info("Loaded ${newProperties.size()} properties")
 
-        LOG.info "Set system properties based on loaded properties"
+        LOG.info("Set system properties based on loaded properties")
         newProperties.each { property, value ->
             LOG.info("Set system property $property: $value")
             System.setProperty(property as String, value as String)

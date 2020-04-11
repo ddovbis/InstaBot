@@ -80,7 +80,7 @@ class RelatedUsersUpdater {
      * @return - true if any of related users have been updated more than one day ago, or false otherwise
      */
     private boolean shouldBeUpdated(String masterUsername, LocalDateTime startTime) {
-        LOG.info "Check if related users should be updated"
+        LOG.info("Check if related users should be updated")
 
         if (updateFrequency == null || updateFrequency == 0) {
             LOG.info("No related-users updater-frequency is set; updated will not be performed")
@@ -88,17 +88,17 @@ class RelatedUsersUpdater {
 
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
         if (allUsers == null || allUsers.isEmpty()) {
-            LOG.info "No users found in data service; proceed with the update"
+            LOG.info("No users found in data service; proceed with the update")
             return true
         }
 
         for (User user : allUsers) {
             if (ChronoUnit.MINUTES.between(user.getIsFollowedLastUpdatedAt(), startTime) >= updateFrequency || ChronoUnit.MINUTES.between(user.getIsFollowerLastUpdatedAt(), startTime) >= updateFrequency) {
-                LOG.info "At least one related user (${user.username}) has been updated less than $updateFrequency minute(s) ago; proceed with the update"
+                LOG.info("At least one related user (${user.username}) has been updated less than $updateFrequency minute(s) ago; proceed with the update")
                 return true
             }
         }
-        LOG.info "All users have been updated less than $updateFrequency minute(s) ago; no update is required"
+        LOG.info("All users have been updated less than $updateFrequency minute(s) ago; no update is required")
         return false
     }
 
@@ -110,7 +110,7 @@ class RelatedUsersUpdater {
      * @param startTime - time when users-update process started
      */
     private void normalizeUsers(Map<String, User> toBeNormalizedUserIdToUserMap, LocalDateTime startTime) {
-        LOG.info "Normalize, if necessary, isFollower and isFollowing parameters for ${toBeNormalizedUserIdToUserMap.size()} users"
+        LOG.info("Normalize, if necessary, isFollower and isFollowing parameters for ${toBeNormalizedUserIdToUserMap.size()} users")
 
         boolean isNormalized = false
         int normalizedUsers = 0

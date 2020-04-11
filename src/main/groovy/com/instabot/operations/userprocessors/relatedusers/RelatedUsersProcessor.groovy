@@ -20,7 +20,7 @@ class RelatedUsersProcessor {
     OperationsHelper operationsHelper
 
     void processRelatedUsers(String masterUsername) {
-        LOG.info "Start processing users related to master user: $masterUsername"
+        LOG.info("Start processing users related to master user: $masterUsername")
 
         // TODO uncomment after RelatedUsersCommenter is implemented
         // List<User> usersToBeProcessed = userDataService.getAllToBeProcessedByMasterUsername(masterUsername)
