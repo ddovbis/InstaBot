@@ -1,10 +1,13 @@
 package com.instabot.data.services.user
 
+
+import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
 import com.instabot.data.repositories.user.UserRepository
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,7 +15,18 @@ class UserDataService {
     private static final Logger LOG = LogManager.getLogger(UserDataService.class)
 
     @Autowired
+    private InstaBotConfig instaBotConfig
+    @Autowired
     private UserRepository userRepository
+
+    private boolean doNotLikeFollowers
+
+    @Bean("initializeUserDataService")
+    void initialize() {
+        LOG.info("Initialize UserDataService")
+        doNotLikeFollowers = instaBotConfig.getIniFile().get("related-users", "do-not-like-followers", Boolean.class) as boolean
+        LOG.info("set do-not-like-followers: $doNotLikeFollowers")
+    }
 
     boolean exists(User user) {
         if (user == null) {
@@ -72,13 +86,6 @@ class UserDataService {
         return userRepository.findByMasterUsername(masterUsername)
     }
 
-    /*
-        TODO
-            1. Change to primaryUser
-            2. Add do-not-like-followers .ini parameter; if enabled filter users that are followers
-                ... && (if (disabled || (enabled && !isFollower))
-     */
-
     List<User> getAllToBeLikedByMasterUsername(String masterUsername) {
         if (masterUsername == null) {
             return null
@@ -88,9 +95,8 @@ class UserDataService {
         List<User> allRelatedUsers = getAllByMasterUsername(masterUsername)
         LOG.info("Total nr. of related users: ${allRelatedUsers.size()}")
 
-        // TODO && status != LIKED
         List<User> allRelatedUsersToBeLiked = allRelatedUsers.findAll({ user ->
-            (user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0
+            !user.isFullyLiked() && (!doNotLikeFollowers || (doNotLikeFollowers && !user.isFollower) && user.isFollowed)
         })
         LOG.info("Total nr. of users whose posts should be liked: ${allRelatedUsersToBeLiked.size()}")
 

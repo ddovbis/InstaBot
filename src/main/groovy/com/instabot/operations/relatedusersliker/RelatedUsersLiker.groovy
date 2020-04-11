@@ -59,31 +59,32 @@ class RelatedUsersLiker {
         LOG.info("Start processing post likes for user: $user.username")
         setTargetNrOfLikes(user)
 
-        if (user.nrOfLikes >= user.targetedNrOfLikes) {
-            LOG.info("User $user.username has $user.nrOfLikes out of $user.targetedNrOfLikes posts liked; no post likes processing is required")
+        if (user.isFullyLiked()) {
+            LOG.info("User $user.username is fully liked ($user.nrOfLikes out of $user.targetedNrOfLikes posts liked); no post likes processing is required")
             return
         }
 
         operationsHelper.openFirstPost(user.username)
 
-        int postIndex = 0
+        int postNr = 0
         WebElement nextPostButtonElement
         do {
             WebElement likeButtonSvgElement = getLikeButtonSvgElement()
             boolean isPostLiked = isPostLiked(likeButtonSvgElement)
 
+            postNr++
             if (isPostLiked) {
-                LOG.info("Post with index $postIndex has already been liked; move to the next post")
+                LOG.info("Post nr. $postNr has already been liked; move to the next post")
                 sleep(operationsHelper.getRandomInt(2, 5) * 1000)
             } else {
-                user.nrOfLikes++
-                LOG.info("Like post with index: $postIndex; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
+                // TODO add to a method
+                user.incrementNrOfLikes()
+                LOG.info("Like post nr: $postNr; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
                 // TODO implement waiting time based on .ini
                 sleep(operationsHelper.getRandomInt(2, 6) * 1000)
                 instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
 
                 // TODO report an ActionLike instead
-
                 userDataService.save(user)
 
                 // TODO implement waiting time based on .ini
@@ -96,11 +97,13 @@ class RelatedUsersLiker {
                 // TODO add user status
                 return
             }
+            if (user.isFullyLiked()) {
+                return
+            }
 
             // move to the next post
-            instaDriver.actions.moveToElement(nextPostButtonElement).click().perform()
-            postIndex++
-        } while (user.nrOfLikes < user.targetedNrOfLikes || nextPostButtonElement == null)
+            operationsHelper.clickOnWebElement(nextPostButtonElement)
+        } while (!user.isFullyLiked() || nextPostButtonElement == null)
     }
 
     private void setTargetNrOfLikes(User user) {

@@ -52,4 +52,8 @@ class OperationsHelper {
         // all posts are represented by an image, therefore the first image represents the first post
         return articleElement.findElement(By.xpath('.//img'))
     }
+
+     void clickOnWebElement(WebElement webElement) {
+        instaDriver.actions.moveToElement(webElement).click().perform()
+    }
 }

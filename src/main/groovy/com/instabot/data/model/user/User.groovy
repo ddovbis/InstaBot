@@ -24,10 +24,9 @@ class User {
 
     int nrOfLikes
     int targetedNrOfLikes
+    LocalDateTime processedLikesAt
 
-    LocalDateTime processedAt // TODO Change to ProcessedLikesAt
-    UserStatus userStatus
-    // TODO Replace by User status list: if LIKED; UNFOLLOWED; TO_FOLLOW (when followed, remove TO_FOLLOW status);
+    TreeSet<UserLabel> labels
 
     protected User() {
     }
@@ -37,9 +36,7 @@ class User {
         this.username = username
         this.id = masterUsername + "_" + username
         this.name = name
-
-        this.isFollower = false
-        this.isFollowed = false
+        this.labels = new TreeSet<UserLabel>()
     }
 
 
@@ -57,13 +54,50 @@ class User {
     void setIsFollowed(boolean isFollowed) {
         if (!isFollowed && this.isFollowed) {
             this.becameUnfollowedAt = LocalDateTime.now()
-        } else {
-            if (isFollowed && !this.isFollowed) {
+        } else if (isFollowed) {
+            removeLabel(UserLabel.TO_FOLLOW)
+
+            if (!this.isFollowed) {
                 this.becameUnfollowedAt = null
             }
         }
+
         this.isFollowed = isFollowed
         this.isFollowedLastUpdatedAt = LocalDateTime.now()
+    }
+
+    void incrementNrOfLikes() {
+        nrOfLikes++
+        if (nrOfLikes == targetedNrOfLikes) {
+            addLabel(UserLabel.FULLY_LIKED)
+        }
+    }
+
+    void setTargetedNrOfLikes(int targetedNrOfLikes) {
+        this.targetedNrOfLikes = targetedNrOfLikes
+        if (nrOfLikes >= targetedNrOfLikes) {
+            addLabel(UserLabel.FULLY_LIKED)
+        }
+    }
+
+    void addLabel(UserLabel label) {
+        if (label == UserLabel.FULLY_LIKED) {
+            processedLikesAt = LocalDateTime.now()
+        }
+
+        labels.add(label)
+    }
+
+    void removeLabel(UserLabel label) {
+        if (label == UserLabel.FULLY_LIKED) {
+            processedLikesAt = null
+        }
+
+        labels.remove(label)
+    }
+
+    boolean isFullyLiked() {
+        return labels.contains(UserLabel.FULLY_LIKED)
     }
 
     @Override

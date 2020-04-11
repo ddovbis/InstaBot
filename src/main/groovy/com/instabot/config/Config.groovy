@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class Config {
+class Config { // TODO Join with InstaBotConfig
     private static final Logger LOG = LogManager.getLogger(Config.class)
 
     @Bean("loadSystemProperties")
