@@ -14,7 +14,7 @@ class OperationsHelper {
     private static final String INSTAGRAM_PAGE = "https://www.instagram.com/"
 
     @Autowired
-    InstaWebDriver instaDriver
+    private InstaWebDriver instaDriver
 
     /**
      * @param min - minimum number in the random range

@@ -20,15 +20,15 @@ class MailSender {
     public static final Logger LOG = LogManager.getLogger(MailSender.class)
 
     @Autowired
-    InstaBotConfig initializeInstaBotConfig
+    private InstaBotConfig initializeInstaBotConfig
 
-    boolean isSmtpEnabled
-    Session session
-    String host
-    Integer port
-    String username
-    String password
-    String recipient
+    private boolean isSmtpEnabled
+    private Session session
+    private String host
+    private Integer port
+    private String username
+    private String password
+    private String recipient
 
     @Bean("initializeMailSender")
     @DependsOn("initializeInstaBotConfig")

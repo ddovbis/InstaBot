@@ -23,7 +23,7 @@ class InstaWebDriver {
     private static final Logger LOG = LogManager.getLogger(InstaWebDriver.class)
 
     @Autowired
-    InstaBotConfig instaBotConfig
+    private InstaBotConfig instaBotConfig
 
     private DriverManagerType driverManagerType
     public WebDriver driver

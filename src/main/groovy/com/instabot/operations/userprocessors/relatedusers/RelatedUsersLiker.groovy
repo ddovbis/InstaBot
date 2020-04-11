@@ -19,13 +19,13 @@ class RelatedUsersLiker {
     private static final Logger LOG = LogManager.getLogger(RelatedUsersLiker.class)
 
     @Autowired
-    InstaBotConfig instaBotConfig
+    private InstaBotConfig instaBotConfig
     @Autowired
-    UserDataService userDataService
+    private UserDataService userDataService
     @Autowired
-    OperationsHelper operationsHelper
+    private OperationsHelper operationsHelper
     @Autowired
-    InstaWebDriver instaDriver
+    private InstaWebDriver instaDriver
 
     private int targetedNrOfLikesMin
     private int targetedNrOfLikesMax

@@ -28,9 +28,9 @@ class InstaBot {
     @Autowired
     private RelatedUsersReporter relatedUsersReporter
     @Autowired
-    RelatedUsersProcessor relatedUsersProcessor
+    private RelatedUsersProcessor relatedUsersProcessor
 
-    String masterUsername
+    private String masterUsername
 
     @Bean("initializeInstaBot")
     @DependsOn("initializeInstaBotConfig")

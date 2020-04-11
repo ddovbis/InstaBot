@@ -13,11 +13,11 @@ class RelatedUsersProcessor {
     private static final Logger LOG = LogManager.getLogger(RelatedUsersProcessor.class)
 
     @Autowired
-    UserDataService userDataService
+    private UserDataService userDataService
     @Autowired
-    RelatedUsersLiker relatedUsersLiker
+    private RelatedUsersLiker relatedUsersLiker
     @Autowired
-    OperationsHelper operationsHelper
+    private OperationsHelper operationsHelper
 
     void processRelatedUsers(String masterUsername) {
         LOG.info("Start processing users related to master user: $masterUsername")

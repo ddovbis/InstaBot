@@ -18,13 +18,13 @@ class RelatedUsersReporter {
     private final Logger LOG = LogManager.getLogger(RelatedUsersReporter.class)
 
     @Autowired
-    InstaBotConfig initializeInstaBotConfig
+    private InstaBotConfig initializeInstaBotConfig
     @Autowired
-    MailSender mailSender
+    private MailSender mailSender
     @Autowired
-    XlsReportBuilder xlsReportBuilder
+    private XlsReportBuilder xlsReportBuilder
 
-    boolean sendReport
+    private boolean sendReport
 
     @Bean("initializeRelatedUsersReporter")
     @DependsOn("initializeInstaBotConfig")

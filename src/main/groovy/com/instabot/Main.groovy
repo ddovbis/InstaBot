@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.instabot.data.repositories.user")
 class Main implements CommandLineRunner {
-    public static final Logger LOG = LogManager.getLogger(Main.class)
+    private static final Logger LOG = LogManager.getLogger(Main.class)
 
     @Autowired
-    InstaBot instaBot
+    private InstaBot instaBot
 
     static void main(String[] args) throws InterruptedException {
         ArgsHandler.process(args)

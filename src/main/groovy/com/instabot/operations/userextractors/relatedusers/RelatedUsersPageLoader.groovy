@@ -18,9 +18,9 @@ class RelatedUsersPageLoader {
     private final Random RANDOM = new Random()
 
     @Autowired
-    InstaWebDriver instaDriver
+    private InstaWebDriver instaDriver
     @Autowired
-    OperationsHelper operationsHelper
+    private OperationsHelper operationsHelper
 
     /**
      * Goes to master user page, opens Following or Follower (depending on {@param userType} window and scrolls down until all users are loaded to html
