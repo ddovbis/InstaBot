@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class XlsReportBuilder {
-    public static final String FOLLOWED_NOT_FOLLOWERS_SHEET_NAME = "IS NOT Follower & IS Followed"
-    public static final String FOLLOWED_FOLLOWERS_SHEET_NAME = "IS Follower & IS Followed"
-    public static final String NOT_FOLLOWED_FOLLOWERS_SHEET_NAME = "IS Follower & IS NOT Followed"
+    public static final String FOLLOWED_NOT_FOLLOWERS_SHEET_NAME = "Is not following you back"
+    public static final String FOLLOWED_FOLLOWERS_SHEET_NAME = "You follow each other"
+    public static final String NOT_FOLLOWED_FOLLOWERS_SHEET_NAME = "You are not following back"
 
     private static final Logger LOG = LogManager.getLogger(XlsReportBuilder.class)
 
