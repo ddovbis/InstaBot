@@ -41,7 +41,7 @@ class OperationsHelper {
     void openFirstPost(String username) {
         goToUserPage(username)
 
-        LOG.debug "Click on the first post image to open it"
+        LOG.debug("Click on the first post image to open it")
         instaDriver.actions.moveToElement(getFirstPostElement()).click().perform()
     }
 

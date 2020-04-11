@@ -32,9 +32,9 @@ class UserDataService {
         if (user == null) {
             throw new NullPointerException("Attempted to save null user to database")
         } else if (exists(user)) {
-            LOG.debug "Update user $user"
+            LOG.debug("Update user $user")
         } else {
-            LOG.debug "Create user $user"
+            LOG.debug("Create user $user")
         }
         userRepository.save(user)
     }
@@ -86,16 +86,16 @@ class UserDataService {
         if (masterUsername == null) {
             return null
         }
-        LOG.info "Get all users whose posts should be liked by master user: $masterUsername"
+        LOG.info("Get all users whose posts should be liked by master user: $masterUsername")
 
         List<User> allRelatedUsers = getAllByMasterUsername(masterUsername)
-        LOG.info "Total nr. of related users: ${allRelatedUsers.size()}"
+        LOG.info("Total nr. of related users: ${allRelatedUsers.size()}")
 
         // TODO && status != processed
         List<User> allRelatedUsersToBeLiked = allRelatedUsers.findAll({ user ->
             (user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0
         })
-        LOG.info "Total nr. of users whose posts should be liked: ${allRelatedUsersToBeLiked.size()}"
+        LOG.info("Total nr. of users whose posts should be liked: ${allRelatedUsersToBeLiked.size()}")
 
         return allRelatedUsersToBeLiked
     }

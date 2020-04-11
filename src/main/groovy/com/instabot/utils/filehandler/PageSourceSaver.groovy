@@ -11,7 +11,7 @@ class PageSourceSaver {
 
     static void savePageSourceOnException(InstaWebDriver instaDriver) {
         if (instaDriver == null) {
-            LOG.error "InstaWebDriver is null; no page source will be saved"
+            LOG.warn("InstaWebDriver is null; no page source will be saved")
             return
         }
 
@@ -19,7 +19,7 @@ class PageSourceSaver {
         String filePath = "./logs/error/$instaDriver.primaryUsername/$fileName"
         File file = new File(filePath)
         file.getParentFile().mkdirs()
-        LOG.info "Save page source on exception to file: ${file.getAbsolutePath()}"
+        LOG.info("Save page source on exception to file: ${file.getAbsolutePath()}")
         file << instaDriver.driver.getPageSource()
     }
 }

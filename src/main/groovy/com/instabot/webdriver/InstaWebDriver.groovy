@@ -74,7 +74,7 @@ class InstaWebDriver {
         LOG.info("Initialize WebDriverManager")
         driverManagerType = DriverManagerType.valueOf(System.getProperty("webdriver.type"))
         WebDriverManager.getInstance(driverManagerType).setup()
-        LOG.info "WebDriverManager Successfully initialized for driver manager type: $driverManagerType"
+        LOG.info("WebDriverManager Successfully initialized for driver manager type: $driverManagerType")
     }
 
     private void initializeWebDriver() {
@@ -107,7 +107,7 @@ class InstaWebDriver {
         }
 
         String openBrowserOnDisplayNrStr = System.getProperty("open.browser.on.display.nr")
-        LOG.info "Open browser on a specific monitor, based on system property open.browser.on.display.nr: $openBrowserOnDisplayNrStr"
+        LOG.info("Open browser on a specific monitor, based on system property open.browser.on.display.nr: $openBrowserOnDisplayNrStr")
         int openBrowserOnDisplayNr = openBrowserOnDisplayNrStr as int
         if (openBrowserOnDisplayNr < 0) {
             LOG.warn("Browser is set up to be opened on ${openBrowserOnDisplayNr}th display; the nr. is reset to 0")

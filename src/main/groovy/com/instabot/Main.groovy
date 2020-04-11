@@ -32,6 +32,6 @@ class Main implements CommandLineRunner {
         Date startTime = new Date()
         instaBot.start()
 
-        LOG.info "Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}"
+        LOG.info("Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}")
     }
 }

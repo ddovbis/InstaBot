@@ -36,7 +36,7 @@ class RelatedUsersPageLoader {
         } catch (UsersLoadingException ule) {
             if (criticalFailedLoadingAttempts == 0) {
                 criticalFailedLoadingAttempts++
-                LOG.warn "Failed to load all $userType users for $masterUsername master user; try again in safe-mode (slower loading)"
+                LOG.warn("Failed to load all $userType users for $masterUsername master user; try again in safe-mode (slower loading)")
                 loadUsers(masterUsername, userType, true)
             } else {
                 throw ule
@@ -52,7 +52,7 @@ class RelatedUsersPageLoader {
         WebElement usersWindowButton = getUsersWindowButton(masterUsername, userType)
 
         int usersTotalAmount = getUsersTotalAmount(usersWindowButton)
-        LOG.info "Load all $userType users for $masterUsername master user;  users to be loaded: $usersTotalAmount"
+        LOG.info("Load all $userType users for $masterUsername master user;  users to be loaded: $usersTotalAmount")
         if (usersTotalAmount == 0) {
             LOG.info("No $userType users to be loaded")
             return
@@ -82,11 +82,11 @@ class RelatedUsersPageLoader {
             // update users WebElement list and qty
             loadedUsers = instaDriver.driver.findElements(usersListPath)
             loadedUsersAmount = loadedUsers.size()
-            LOG.info "Loaded $loadedUsersAmount out of $usersTotalAmount '$userType' users; continue loading"
+            LOG.info("Loaded $loadedUsersAmount out of $usersTotalAmount '$userType' users; continue loading")
 
             // if no users have been loaded since last iteration count a new failed attempt
             if (lastLoadedUsersAmount == loadedUsersAmount) {
-                LOG.warn "No new $userType users loaded; consecutive failed loading attempts: ${++consecutiveFailedLoadingAttempts}"
+                LOG.warn("No new $userType users loaded; consecutive failed loading attempts: ${++consecutiveFailedLoadingAttempts}")
             }
 
             // after 3 failed attempts return the page or throw an exception if necessary
@@ -94,7 +94,7 @@ class RelatedUsersPageLoader {
                 if (isNecessaryToThrowUserLoadingException(loadedUsersAmount, usersTotalAmount)) {
                     throw new UsersLoadingException("Unable to load all $userType users for $masterUsername master user; loaded $loadedUsersAmount out of $usersTotalAmount users")
                 } else {
-                    LOG.warn "Finish loading $userType users for $masterUsername master user; loaded $loadedUsersAmount users instead of $usersTotalAmount"
+                    LOG.warn("Finish loading $userType users for $masterUsername master user; loaded $loadedUsersAmount users instead of $usersTotalAmount")
                     return
                 }
             }
@@ -104,7 +104,7 @@ class RelatedUsersPageLoader {
                 consecutiveFailedLoadingAttempts = 0
             }
         }
-        LOG.info "All $loadedUsersAmount $userType are loaded"
+        LOG.info("All $loadedUsersAmount $userType are loaded")
     }
 
     /**

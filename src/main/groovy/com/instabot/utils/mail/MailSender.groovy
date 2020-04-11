@@ -120,9 +120,9 @@ class MailSender {
             setAttachments(content, attachments)
             message.setContent(content)
 
-            LOG.info "Send email with subject '$subject' to $recipient (attachments: ${attachments.size()})"
+            LOG.info("Send email with subject '$subject' to $recipient (attachments: ${attachments.size()})")
             Transport.send(message)
-            LOG.info "Email sent successfully"
+            LOG.info("Email sent successfully")
         } catch (MessagingException me) {
             LOG.error("Could not send email due to MessagingException:", me)
         }
