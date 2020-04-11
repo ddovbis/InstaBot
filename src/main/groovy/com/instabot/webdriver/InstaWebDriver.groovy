@@ -31,6 +31,7 @@ class InstaWebDriver {
     public JavascriptExecutor jse
     public Actions actions
 
+    // TODO Change to PrimaryUser once it's implemented
     public String primaryUsername
     private String password
 

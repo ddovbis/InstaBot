@@ -1,4 +1,4 @@
-package com.instabot.operations.userprocessors.relatedusers
+package com.instabot.operations.relatedusersliker
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
@@ -13,6 +13,12 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+
+/*
+    TODO
+        1. LOG (in debug) the stand by time
+        2. Random() sets multiple times in a raw the same number. Solve it.
+ */
 
 @Component
 class RelatedUsersLiker {
@@ -37,6 +43,16 @@ class RelatedUsersLiker {
         LOG.info("Min. targeted nr. of likes: $targetedNrOfLikesMin")
         targetedNrOfLikesMax = instaBotConfig.getIniFile().get("related-users", "targeted-nr-of-likes-max", Integer.class)
         LOG.info("Max. targeted nr. of likes: $targetedNrOfLikesMax")
+    }
+
+    void likeRelatedUsersPosts() {
+        LOG.info("Start processing post likes for users related to master user: $instaDriver.primaryUsername")
+        // TODO Change to getByPrimaryUser
+        List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
+        for (User userToBeLiked : userToBeLikedList) {
+            likeUserPosts(userToBeLiked)
+            sleep(operationsHelper.getRandomInt(18, 36) * 1000)
+        }
     }
 
     void likeUserPosts(User user) {

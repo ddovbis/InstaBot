@@ -1,9 +1,9 @@
 package com.instabot
 
 import com.instabot.config.InstaBotConfig
+import com.instabot.operations.relatedusersliker.RelatedUsersLiker
 import com.instabot.operations.reporters.RelatedUsersReporter
 import com.instabot.operations.userextractors.relatedusers.RelatedUsersUpdater
-import com.instabot.operations.userprocessors.relatedusers.RelatedUsersProcessor
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
@@ -28,7 +28,7 @@ class InstaBot {
     @Autowired
     private RelatedUsersReporter relatedUsersReporter
     @Autowired
-    private RelatedUsersProcessor relatedUsersProcessor
+    private RelatedUsersLiker relatedUsersLiker
 
     private String masterUsername
 
@@ -49,8 +49,9 @@ class InstaBot {
             // send related users report
             relatedUsersReporter.sendReport(masterUsername)
 
-            // process related users (like/comment posts)
-            relatedUsersProcessor.processRelatedUsers(masterUsername)
+            // TODO instaDriver.primaryUsername here, if equals to masterUsernname, otherwise System.exit(0)
+            // like posts published by related users
+            relatedUsersLiker.likeRelatedUsersPosts()
 
             // other features here
 

@@ -24,15 +24,12 @@ class User {
 
     int nrOfLikes
     int targetedNrOfLikes
-    int nrOfComments
-    int targetedNrOfComments
 
-    LocalDateTime processedAt
+    LocalDateTime processedAt // TODO Change to ProcessedLikesAt
     UserStatus userStatus
-    // TODO Replace by User status list: if LIKED && COMMENTED, add PROCESSED;
+    // TODO Replace by User status list: if LIKED; UNFOLLOWED; TO_FOLLOW (when followed, remove TO_FOLLOW status);
 
     protected User() {
-
     }
 
     User(String masterUsername, String username, String name) {

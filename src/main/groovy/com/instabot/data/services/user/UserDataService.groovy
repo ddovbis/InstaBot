@@ -72,15 +72,12 @@ class UserDataService {
         return userRepository.findByMasterUsername(masterUsername)
     }
 
-    List<User> getAllToBeProcessedByMasterUsername(String masterUsername) {
-        if (masterUsername == null) {
-            return null
-        }
-        return getAllByMasterUsername(masterUsername).findAll({ user ->
-            ((user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0) ||
-                    ((user.nrOfComments != user.targetedNrOfComments) || user.targetedNrOfComments == 0)
-        })
-    }
+    /*
+        TODO
+            1. Change to primaryUser
+            2. Add do-not-like-followers .ini parameter; if enabled filter users that are followers
+                ... && (if (disabled || (enabled && !isFollower))
+     */
 
     List<User> getAllToBeLikedByMasterUsername(String masterUsername) {
         if (masterUsername == null) {
@@ -91,21 +88,12 @@ class UserDataService {
         List<User> allRelatedUsers = getAllByMasterUsername(masterUsername)
         LOG.info("Total nr. of related users: ${allRelatedUsers.size()}")
 
-        // TODO && status != processed
+        // TODO && status != LIKED
         List<User> allRelatedUsersToBeLiked = allRelatedUsers.findAll({ user ->
             (user.nrOfLikes != user.targetedNrOfLikes) || user.targetedNrOfLikes == 0
         })
         LOG.info("Total nr. of users whose posts should be liked: ${allRelatedUsersToBeLiked.size()}")
 
         return allRelatedUsersToBeLiked
-    }
-
-    List<User> getAllToBeCommentedByMasterUsername(String masterUsername) {
-        if (masterUsername == null) {
-            return null
-        }
-        return getAllByMasterUsername(masterUsername).findAll({ user ->
-            ((user.nrOfComments != user.targetedNrOfComments) || user.targetedNrOfComments == 0)
-        })
     }
 }
