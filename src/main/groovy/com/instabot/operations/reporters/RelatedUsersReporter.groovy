@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
-import java.time.LocalDateTime
+import java.text.SimpleDateFormat
 
 @Component
 class RelatedUsersReporter {
@@ -65,6 +65,7 @@ class RelatedUsersReporter {
     }
 
     private String getXlsFileName(String masterUsername) {
-        return "data/tmp/${masterUsername}_related_users-report_${LocalDateTime.now().format("yyyyMMddHHmm")}.xls"
+        String currentDate = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+        return "data/tmp/${masterUsername}_related_users-report_${currentDate}.xls"
     }
 }
