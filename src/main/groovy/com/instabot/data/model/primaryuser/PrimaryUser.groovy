@@ -2,6 +2,7 @@ package com.instabot.data.model.primaryuser
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.instabot.operations.OperationType
+import com.instabot.utils.converters.OperationTypeToLocalDateTimeMapConverter
 import com.instabot.utils.converters.StringListConverter
 
 import javax.persistence.Convert
@@ -22,9 +23,10 @@ class PrimaryUser {
     int totalUnfollowed
 
     @Convert(converter = StringListConverter.class)
-    List<String> whiteList = new ArrayList<>()
+    List<String> whiteList
 
-    HashMap<OperationType, LocalDateTime> operationLockedUntilMap = new HashMap<>()
+    @Convert(converter = OperationTypeToLocalDateTimeMapConverter.class)
+    HashMap<OperationType, LocalDateTime> operationLockedUntilMap
 
     protected PrimaryUser() {
         whiteList = new ArrayList<>()
@@ -32,6 +34,7 @@ class PrimaryUser {
     }
 
     PrimaryUser(String username) {
+        this()
         this.username = username
     }
 

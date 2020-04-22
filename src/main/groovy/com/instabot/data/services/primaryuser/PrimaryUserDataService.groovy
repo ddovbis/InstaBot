@@ -43,7 +43,7 @@ class PrimaryUserDataService {
         if (primaryUserList == null) {
             throw new NullPointerException("Attempted to save null primary user list to database")
         }
-        LOG.info("Save ${users.size()} (crate/update) primary users to database")
+        LOG.info("Save ${primaryUserList.size()} (crate/update) primary users to database")
         primaryUserRepository.saveAll(primaryUserList)
     }
 
