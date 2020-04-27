@@ -32,7 +32,7 @@ class UserDataService {
         if (user == null) {
             return false
         }
-        return exists(user.getId())
+        return exists(user.id)
     }
 
     boolean exists(String id) {
@@ -53,12 +53,12 @@ class UserDataService {
         userRepository.save(user)
     }
 
-    void saveAll(List<User> users) {
-        if (users == null) {
+    void saveAll(List<User> userList) {
+        if (userList == null) {
             throw new NullPointerException("Attempted to save null user list to database")
         }
-        LOG.info("Save ${users.size()} (crate/update) users to database")
-        userRepository.saveAll(users)
+        LOG.info("Save ${userList.size()} (crate/update) users to database")
+        userRepository.saveAll(userList)
     }
 
     List<User> getAll() {
@@ -69,7 +69,7 @@ class UserDataService {
         if (user == null) {
             return null
         }
-        return get(user.getId())
+        return get(user.id)
     }
 
     User get(String id) {
