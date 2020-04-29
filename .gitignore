@@ -2,5 +2,5 @@
 logs/*
 target/*
 data/*
-
+local/*
 *.iml
