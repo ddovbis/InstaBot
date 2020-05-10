@@ -1,8 +1,6 @@
 package com.instabot.data.model.primaryuser
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.instabot.operations.OperationType
-import com.instabot.utils.converters.OperationTypeToLocalDateTimeMapConverter
 import com.instabot.utils.converters.StringListConverter
 
 import javax.persistence.Convert
@@ -19,18 +17,15 @@ class PrimaryUser {
     int following
     LocalDateTime relatedUsersUpdatedAt
 
+    int totalLiked
     int totalFollowed
     int totalUnfollowed
 
     @Convert(converter = StringListConverter.class)
     List<String> whiteList
 
-    @Convert(converter = OperationTypeToLocalDateTimeMapConverter.class)
-    HashMap<OperationType, LocalDateTime> operationLockedUntilMap
-
     protected PrimaryUser() {
         whiteList = new ArrayList<>()
-        operationLockedUntilMap = new HashMap<>()
     }
 
     PrimaryUser(String username) {
