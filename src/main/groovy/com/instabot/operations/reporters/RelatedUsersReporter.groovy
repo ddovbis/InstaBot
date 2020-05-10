@@ -65,7 +65,7 @@ class RelatedUsersReporter {
     }
 
     private String getXlsFileName(String masterUsername) {
-        String currentDate = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
-        return "data/tmp/${masterUsername}_related_users-report_${currentDate}.xls"
+        String currentDateTime = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+        return "data/tmp/${masterUsername}_related_users-report_${currentDateTime}.xls"
     }
 }

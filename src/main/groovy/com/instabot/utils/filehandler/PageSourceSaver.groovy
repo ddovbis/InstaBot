@@ -4,7 +4,7 @@ import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-import java.time.LocalDateTime
+import java.text.SimpleDateFormat
 
 class PageSourceSaver {
     private static final Logger LOG = LogManager.getLogger(PageSourceSaver.class)
@@ -15,7 +15,8 @@ class PageSourceSaver {
             return
         }
 
-        String fileName = "page_source_${LocalDateTime.now().format("yyyyMMddmmss")}.html"
+        String currentDateTime = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+        String fileName = "page_source_${currentDateTime}.html"
         String filePath = "./logs/error/$instaDriver.primaryUsername/$fileName"
         File file = new File(filePath)
         file.getParentFile().mkdirs()
