@@ -14,6 +14,17 @@ class PrimaryUserDataService {
     @Autowired
     private PrimaryUserRepository primaryUserRepository
 
+    PrimaryUser createOrGetIfExists(String primaryUsername) {
+        if (exists(primaryUsername)) {
+            return get(primaryUsername)
+        } else {
+            PrimaryUser newPrimaryUser = new PrimaryUser(primaryUsername)
+            save(newPrimaryUser)
+            return newPrimaryUser
+        }
+
+    }
+
     boolean exists(PrimaryUser primaryUser) {
         if (PrimaryUser == null) {
             return false

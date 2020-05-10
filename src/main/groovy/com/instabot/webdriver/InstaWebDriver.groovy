@@ -1,6 +1,8 @@
 package com.instabot.webdriver
 
 import com.instabot.config.InstaBotConfig
+import com.instabot.data.model.primaryuser.PrimaryUser
+import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import io.github.bonigarcia.wdm.DriverManagerType
 import io.github.bonigarcia.wdm.WebDriverManager
 import org.apache.logging.log4j.LogManager
@@ -24,6 +26,8 @@ class InstaWebDriver {
 
     @Autowired
     private InstaBotConfig instaBotConfig
+    @Autowired
+    private PrimaryUserDataService primaryUserDataService
 
     private DriverManagerType driverManagerType
     public WebDriver driver
@@ -31,7 +35,7 @@ class InstaWebDriver {
     public JavascriptExecutor jse
     public Actions actions
 
-    // TODO Change to PrimaryUser once it's implemented
+    public PrimaryUser primaryUser
     public String primaryUsername
     private String password
 
@@ -44,7 +48,8 @@ class InstaWebDriver {
         }
 
         LOG.info("Initialize InstaWebDriver")
-        extractCredentials()
+        initializePrimaryUser()
+        setPrimaryUserPassword()
         initializeDriverManager()
         initializeWebDriver()
         initializeWebDriverWait()
@@ -53,7 +58,7 @@ class InstaWebDriver {
         moveBrowserToCorrectMonitor()
         maximizeBrowserWindow()
         logIn()
-        LOG.info("InstaWebDriver successfully initialized for primary user: $primaryUsername")
+        LOG.info("InstaWebDriver successfully initialized")
     }
 
     private isInstaWebDriverDisabled() {
@@ -64,10 +69,15 @@ class InstaWebDriver {
         return isDisabled
     }
 
-    private void extractCredentials() {
-        LOG.info("Extract primary-user credentials")
-
+    private void initializePrimaryUser() {
+        LOG.info("Initialize primary user")
         primaryUsername = instaBotConfig.getIniFile().get("general", "primary-username", String.class)
+        primaryUser = primaryUserDataService.createOrGetIfExists(primaryUsername)
+        LOG.info("Primary user successfully initialized for the username: $primaryUsername")
+    }
+
+    private void setPrimaryUserPassword() {
+        LOG.info("Set primary user's password")
         password = instaBotConfig.getIniFile().get("general", "password", String.class)
     }
 
