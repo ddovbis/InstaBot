@@ -2,7 +2,9 @@ package com.instabot.operations.userextractor.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
+import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import com.instabot.data.services.user.UserDataService
+import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,9 +24,13 @@ class RelatedUsersUpdater {
     @Autowired
     private UserDataService userDataService
     @Autowired
+    private InstaWebDriver instaWebDriver
+    @Autowired
     private RelatedUsersPageLoader relatedUsersPageLoader
     @Autowired
     private RelatedUsersExtractor relatedUsersExtractor
+    @Autowired
+    PrimaryUserDataService primaryUserDataService
 
     private Integer updateFrequency
 
@@ -73,6 +79,8 @@ class RelatedUsersUpdater {
         // update users in dataservice
         List<User> updatedUsers = toBeUpdatedUserIdToUserMap.values().collect()
         userDataService.saveAll(updatedUsers)
+
+        updatePrimaryUserStats(masterUsername, updatedUsers)
     }
 
     /**
@@ -86,6 +94,28 @@ class RelatedUsersUpdater {
             LOG.info("No related-users updater-frequency is set; updated will not be performed")
         }
 
+        if (masterUsername == instaWebDriver.primaryUsername) {
+            return shouldBeUpdatedStandardMode(startTime)
+        } else {
+            return shouldBeUpdatedReportingMode(masterUsername, startTime)
+        }
+    }
+
+    private boolean shouldBeUpdatedStandardMode(LocalDateTime startTime) {
+        LocalDateTime lastRelatedUsersUpdate = instaWebDriver.primaryUser.relatedUsersUpdatedAt
+        if (lastRelatedUsersUpdate == null) {
+            LOG.info("Primary user's related users have never been updated; proceed with the update")
+            return true
+        } else if (ChronoUnit.MINUTES.between(instaWebDriver.primaryUser.relatedUsersUpdatedAt, startTime) >= updateFrequency) {
+            LOG.info("Primary user's related users have been updated more than $updateFrequency minute(s) ago; proceed with the update")
+            return true
+        } else {
+            LOG.info("Primary user's related users have been updated less than $updateFrequency minute(s) ago; no update is required")
+            return false
+        }
+    }
+
+    private boolean shouldBeUpdatedReportingMode(String masterUsername, LocalDateTime startTime) {
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
         if (allUsers == null || allUsers.isEmpty()) {
             LOG.info("No users found in data service; proceed with the update")
@@ -168,5 +198,19 @@ class RelatedUsersUpdater {
                 toBeUpdatedUserIdToUserMap.put(userId, user)
             }
         }
+    }
+
+    /**
+     * Updates primary user with the total number of followers, followed, and the timestamp of the last related users update
+     */
+    private void updatePrimaryUserStats(String masterUsername, List<User> updatedUsers) {
+        LOG.debug("Update primary users stats (followers, followed, and the timestamp of the last related users update)")
+        if (masterUsername != instaWebDriver.primaryUsername) {
+            LOG.debug("InstaBot is running in reporting-mode; no update is required")
+        }
+        instaWebDriver.primaryUser.followers = updatedUsers.findAll(user -> user.isFollower).size()
+        instaWebDriver.primaryUser.following = updatedUsers.findAll(user -> user.isFollowed).size()
+        instaWebDriver.primaryUser.relatedUsersUpdatedAt = LocalDateTime.now()
+        primaryUserDataService.save(instaWebDriver.primaryUser)
     }
 }
