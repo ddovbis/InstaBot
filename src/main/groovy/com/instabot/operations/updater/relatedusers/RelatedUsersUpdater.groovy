@@ -1,4 +1,4 @@
-package com.instabot.operations.userextractor.relatedusers
+package com.instabot.operations.updater.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
@@ -32,25 +32,25 @@ class RelatedUsersUpdater {
     @Autowired
     PrimaryUserDataService primaryUserDataService
 
+    private String masterUsername
     private Integer updateFrequency
 
     @Bean("initializeRelatedUsersUpdater")
     @DependsOn("initializeInstaBotConfig")
     private void initialize() {
         LOG.info("Initialize RelatedUsersUpdater")
+        masterUsername = initializeInstaBotConfig.getIniFile().get("related-users", "master-username", String.class)
         updateFrequency = initializeInstaBotConfig.getIniFile().get("related-users", "update-frequency", Integer.class)
     }
 
     /**
      * Extracts all followed and and the users being followd by the master user and saves or updates them in database
-     *
-     * @param masterUsername - Instagram user whose followers and followed users should be updated; can be different than logged in user @param htmlDocument
      */
-    void updateRelatedUsers(String masterUsername) {
+    void updateRelatedUsers() {
         LocalDateTime startTime = LocalDateTime.now()
 
         LOG.info("Start related users (followers and following lists) updater for master user: $masterUsername")
-        if (!shouldBeUpdated(masterUsername, startTime)) {
+        if (!shouldBeUpdated(startTime)) {
             return
         }
 
@@ -68,7 +68,7 @@ class RelatedUsersUpdater {
         normalizeUsers(extractedUserIdToUserMap, startTime)
 
         // update stored users
-        Map<String, User> toBeUpdatedUserIdToUserMap = getMapWithUpdatedStoredUsers(extractedUserIdToUserMap, masterUsername)
+        Map<String, User> toBeUpdatedUserIdToUserMap = getMapWithUpdatedStoredUsers(extractedUserIdToUserMap)
         int storedUsersToBeUpdated = toBeUpdatedUserIdToUserMap.size()
         LOG.info("Added $storedUsersToBeUpdated stored related users to the updater container")
 
@@ -80,14 +80,14 @@ class RelatedUsersUpdater {
         List<User> updatedUsers = toBeUpdatedUserIdToUserMap.values().collect()
         userDataService.saveAll(updatedUsers)
 
-        updatePrimaryUserStats(masterUsername, updatedUsers)
+        updatePrimaryUserStats(updatedUsers)
     }
 
     /**
      * @param masterUsername - main user in relation to whom the rest of the users should be normalized
      * @return - true if any of related users have been updated more than one day ago, or false otherwise
      */
-    private boolean shouldBeUpdated(String masterUsername, LocalDateTime startTime) {
+    private boolean shouldBeUpdated(LocalDateTime startTime) {
         LOG.info("Check if related users should be updated")
 
         if (updateFrequency == null || updateFrequency == 0) {
@@ -115,7 +115,7 @@ class RelatedUsersUpdater {
         }
     }
 
-    private boolean shouldBeUpdatedReportingMode(String masterUsername, LocalDateTime startTime) {
+    private boolean shouldBeUpdatedReportingMode(LocalDateTime startTime) {
         List<User> allUsers = userDataService.getAllByMasterUsername(masterUsername)
         if (allUsers == null || allUsers.isEmpty()) {
             LOG.info("No users found in data service; proceed with the update")
@@ -167,7 +167,7 @@ class RelatedUsersUpdater {
      * @return - a {@link Map<String, User>} containing stored users with updated {@link User#name}, {@link User#isFollower},
      * and {@link User#isFollowed} based on the information extracted in {@param extractedUserIdToUserMap}
      */
-    private Map<String, User> getMapWithUpdatedStoredUsers(Map<String, User> extractedUserIdToUserMap, String masterUsername) {
+    private Map<String, User> getMapWithUpdatedStoredUsers(Map<String, User> extractedUserIdToUserMap) {
         List<User> storedUsersRelatedToMasterUser = userDataService.getAllByMasterUsername(masterUsername)
         Map<String, User> updatedUserIdToUserMap = new HashMap<>()
 
@@ -203,7 +203,7 @@ class RelatedUsersUpdater {
     /**
      * Updates primary user with the total number of followers, followed, and the timestamp of the last related users update
      */
-    private void updatePrimaryUserStats(String masterUsername, List<User> updatedUsers) {
+    private void updatePrimaryUserStats(List<User> updatedUsers) {
         LOG.debug("Update primary users stats (followers, followed, and the timestamp of the last related users update)")
         if (masterUsername != instaWebDriver.primaryUsername) {
             LOG.debug("InstaBot is running in reporting-mode; no update is required")

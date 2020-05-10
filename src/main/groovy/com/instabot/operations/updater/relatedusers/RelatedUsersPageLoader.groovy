@@ -1,4 +1,4 @@
-package com.instabot.operations.userextractor.relatedusers
+package com.instabot.operations.updater.relatedusers
 
 import com.instabot.operations.helper.OperationsHelper
 import com.instabot.utils.exceptions.user.UsersLoadingException
