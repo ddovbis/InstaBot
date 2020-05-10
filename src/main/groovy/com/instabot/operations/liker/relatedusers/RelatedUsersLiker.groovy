@@ -1,4 +1,4 @@
-package com.instabot.operations.relatedusersliker
+package com.instabot.operations.liker.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User

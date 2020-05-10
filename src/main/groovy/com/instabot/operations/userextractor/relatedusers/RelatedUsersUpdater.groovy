@@ -1,4 +1,4 @@
-package com.instabot.operations.userextractors.relatedusers
+package com.instabot.operations.userextractor.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User

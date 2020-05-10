@@ -1,4 +1,4 @@
-package com.instabot.operations.reporters
+package com.instabot.operations.reporter.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.utils.filehandler.XlsReportBuilder

@@ -1,9 +1,9 @@
 package com.instabot
 
 import com.instabot.config.InstaBotConfig
-import com.instabot.operations.relatedusersliker.RelatedUsersLiker
-import com.instabot.operations.reporters.RelatedUsersReporter
-import com.instabot.operations.userextractors.relatedusers.RelatedUsersUpdater
+import com.instabot.operations.liker.relatedusers.RelatedUsersLiker
+import com.instabot.operations.reporter.relatedusers.RelatedUsersReporter
+import com.instabot.operations.userextractor.relatedusers.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
