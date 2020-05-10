@@ -1,9 +1,9 @@
 package com.instabot
 
 import com.instabot.config.InstaBotConfig
-import com.instabot.operations.relatedusersliker.RelatedUsersLiker
-import com.instabot.operations.reporters.RelatedUsersReporter
-import com.instabot.operations.userextractors.relatedusers.RelatedUsersUpdater
+import com.instabot.operations.liker.relatedusers.RelatedUsersLiker
+import com.instabot.operations.reporter.relatedusers.RelatedUsersReporter
+import com.instabot.operations.updater.relatedusers.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
@@ -42,26 +42,42 @@ class InstaBot {
     void start() throws InterruptedException {
         try {
             LOG.info("Start InstaBot execution")
-
-            // update related users in database
-            relatedUsersUpdater.updateRelatedUsers(masterUsername)
-
-            // send related users report
-            relatedUsersReporter.sendReport(masterUsername)
-
-            // TODO instaDriver.primaryUsername here, if equals to masterUsernname, otherwise System.exit(0)
-            // like posts published by related users
-            relatedUsersLiker.likeRelatedUsersPosts()
-
-            // other features here
-
-            // close InstaWebDriver connection at the end of the execution
-            instaDriver.closeConnection()
+            if (masterUsername == instaDriver.primaryUsername) {
+                standardMode()
+            } else {
+                reportingMode()
+            }
         }
         catch (UsersLoadingException e) {
             LOG.error("Could not load all users", e)
             PageSourceSaver.savePageSourceOnException(instaDriver)
             throw e
+        } finally {
+            LOG.info("All operations are finished; close InstaWebDriver connection...")
+            instaDriver.closeConnection()
         }
+    }
+
+    private void standardMode() {
+        // update related users in database
+        relatedUsersUpdater.updateRelatedUsers()
+
+        // send related users report
+        relatedUsersReporter.sendReport()
+
+        // like posts published by related users
+        relatedUsersLiker.likeRelatedUsersPosts()
+
+        // other features here
+    }
+
+    private void reportingMode() {
+        LOG.info("InstaBot has been started in reporting-only mode (master username doesn't belong to the primary user logged into Instagram)")
+
+        // update related users in database
+        relatedUsersUpdater.updateRelatedUsers()
+
+        // send related users report
+        relatedUsersReporter.sendReport()
     }
 }

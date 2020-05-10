@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = "com.instabot.data.repositories.user")
+@EnableJpaRepositories(basePackages = "com.instabot.data.repositories")
 class Main implements CommandLineRunner {
     private static final Logger LOG = LogManager.getLogger(Main.class)
 

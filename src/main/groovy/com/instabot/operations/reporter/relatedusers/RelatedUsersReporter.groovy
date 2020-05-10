@@ -1,4 +1,4 @@
-package com.instabot.operations.reporters
+package com.instabot.operations.reporter.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.utils.filehandler.XlsReportBuilder
@@ -25,15 +25,17 @@ class RelatedUsersReporter {
     private XlsReportBuilder xlsReportBuilder
 
     private boolean sendReport
+    private String masterUsername
 
     @Bean("initializeRelatedUsersReporter")
     @DependsOn("initializeInstaBotConfig")
     private void initialize() {
         LOG.info("Initialize RelatedUsersReporter")
         sendReport = initializeInstaBotConfig.getIniFile().get("related-users", "send-report", Boolean.class)
+        masterUsername = initializeInstaBotConfig.getIniFile().get("related-users", "master-username", String.class)
     }
 
-    void sendReport(String masterUsername) {
+    void sendReport() {
         if (!sendReport) { // TODO: Or user updated recently
             LOG.debug("Report sending is disabled; no report will be sent for related users")
             return
@@ -65,7 +67,7 @@ class RelatedUsersReporter {
     }
 
     private String getXlsFileName(String masterUsername) {
-        String currentDate = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
-        return "data/tmp/${masterUsername}_related_users-report_${currentDate}.xls"
+        String currentDateTime = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+        return "data/tmp/${masterUsername}_related_users-report_${currentDateTime}.xls"
     }
 }
