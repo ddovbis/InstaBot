@@ -18,7 +18,6 @@ class PrimaryUser {
     LocalDateTime relatedUsersUpdatedAt
 
     int totalLiked
-    int totalFollowed
     int totalUnfollowed
 
     @Convert(converter = StringListConverter.class)
