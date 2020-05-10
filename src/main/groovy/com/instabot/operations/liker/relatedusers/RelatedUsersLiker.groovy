@@ -2,6 +2,7 @@ package com.instabot.operations.liker.relatedusers
 
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.user.User
+import com.instabot.data.model.user.UserLabel
 import com.instabot.data.services.user.UserDataService
 import com.instabot.operations.helper.OperationsHelper
 import com.instabot.webdriver.InstaWebDriver
@@ -77,8 +78,9 @@ class RelatedUsersLiker {
 
             postNr++
             if (isPostLiked) {
-                LOG.info("Post nr. $postNr has already been liked; move to the next post")
-                sleep(operationsHelper.getRandomInt(2, 5) * 1000)
+                LOG.info("Post nr. $postNr has already been liked; set user as fully liked and move to the next user")
+                user.addLabel(UserLabel.FULLY_LIKED)
+                userDataService.save(user)
             } else {
                 // TODO add to a method
                 user.incrementNrOfLikes()
@@ -90,9 +92,10 @@ class RelatedUsersLiker {
                 // TODO report an ActionLike instead
                 userDataService.save(user)
 
-                // TODO implement waiting time based on .ini
-                sleep(operationsHelper.getRandomInt(18, 24) * 1000)
             }
+            // TODO implement waiting time based on .ini
+            sleep(operationsHelper.getRandomInt(18, 24) * 1000)
+
 
             nextPostButtonElement = getNextPostButtonElement()
             if (nextPostButtonElement == null) {
