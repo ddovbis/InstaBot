@@ -3,7 +3,7 @@ package com.instabot
 import com.instabot.config.InstaBotConfig
 import com.instabot.operations.liker.relatedusers.RelatedUsersLiker
 import com.instabot.operations.reporter.relatedusers.RelatedUsersReporter
-import com.instabot.operations.userextractor.relatedusers.RelatedUsersUpdater
+import com.instabot.operations.updater.relatedusers.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
@@ -60,10 +60,10 @@ class InstaBot {
 
     private void standardMode() {
         // update related users in database
-        relatedUsersUpdater.updateRelatedUsers(masterUsername)
+        relatedUsersUpdater.updateRelatedUsers()
 
         // send related users report
-        relatedUsersReporter.sendReport(masterUsername)
+        relatedUsersReporter.sendReport()
 
         // like posts published by related users
         relatedUsersLiker.likeRelatedUsersPosts()
@@ -75,9 +75,9 @@ class InstaBot {
         LOG.info("InstaBot has been started in reporting-only mode (master username doesn't belong to the primary user logged into Instagram)")
 
         // update related users in database
-        relatedUsersUpdater.updateRelatedUsers(masterUsername)
+        relatedUsersUpdater.updateRelatedUsers()
 
         // send related users report
-        relatedUsersReporter.sendReport(masterUsername)
+        relatedUsersReporter.sendReport()
     }
 }

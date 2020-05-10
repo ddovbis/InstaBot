@@ -39,15 +39,17 @@ class RelatedUsersLiker {
     @Bean("initializeRelatedUsersLiker")
     private void initialize() {
         LOG.info("Initialize RelatedUsersLiker")
+
         targetedNrOfLikesMin = instaBotConfig.getIniFile().get("related-users", "targeted-nr-of-likes-min", Integer.class)
         LOG.info("Min. targeted nr. of likes: $targetedNrOfLikesMin")
+
         targetedNrOfLikesMax = instaBotConfig.getIniFile().get("related-users", "targeted-nr-of-likes-max", Integer.class)
         LOG.info("Max. targeted nr. of likes: $targetedNrOfLikesMax")
     }
 
     void likeRelatedUsersPosts() {
         LOG.info("Start processing post likes for users related to master user: $instaDriver.primaryUsername")
-        // TODO Change to getByPrimaryUser
+
         List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
         for (User userToBeLiked : userToBeLikedList) {
             likeUserPosts(userToBeLiked)
@@ -57,6 +59,7 @@ class RelatedUsersLiker {
 
     void likeUserPosts(User user) {
         LOG.info("Start processing post likes for user: $user.username")
+
         setTargetNrOfLikes(user)
 
         if (user.isFullyLiked()) {
