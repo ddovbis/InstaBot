@@ -1,7 +1,9 @@
 package com.instabot.data.model.user
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.instabot.utils.converters.StringTreeSetConverter
 
+import javax.persistence.Convert
 import javax.persistence.Entity
 import javax.persistence.Id
 import java.time.LocalDateTime
@@ -26,6 +28,7 @@ class User {
     int targetedNrOfLikes
     LocalDateTime processedLikesAt
 
+    @Convert(converter = StringTreeSetConverter.class)
     TreeSet<UserLabel> labels
 
     protected User() {
