@@ -119,19 +119,19 @@ class InstaWebDriver {
                 .getLocalGraphicsEnvironment()
                 .getScreenDevices()
 
+        LOG.info("Total screen devices found: $screenDevices.length")
+
         if (openBrowserOnDisplayNr > screenDevices.length) {
             LOG.warn("Browser is set up to be open on ${openBrowserOnDisplayNr}th display, however, the total nr. of displays is $screenDevices.length; the nr. is reset to 0")
             openBrowserOnDisplayNr = 0
         }
 
-        int upperLeftCornerOfTheMonitor = 0
-        if (openBrowserOnDisplayNr > 1) {
-            upperLeftCornerOfTheMonitor = (int) screenDevices[1]
-                    .getDefaultConfiguration()
-                    .getBounds()
-                    .width
-        }
-        driver.manage().window().setPosition(new Point(upperLeftCornerOfTheMonitor, 0))
+        java.awt.Point displayLocation = screenDevices[openBrowserOnDisplayNr]
+                .getDefaultConfiguration()
+                .getBounds()
+                .location
+
+        driver.manage().window().setPosition(new Point(displayLocation.x as int, displayLocation.y as int))
     }
 
     private void maximizeBrowserWindow() {
