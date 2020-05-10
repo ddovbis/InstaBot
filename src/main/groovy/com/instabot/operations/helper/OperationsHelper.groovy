@@ -42,7 +42,10 @@ class OperationsHelper {
         goToUserPage(username)
 
         LOG.debug("Click on the first post image to open it")
-        instaDriver.actions.moveToElement(getFirstPostElement()).click().perform()
+
+        WebElement firstPostelement = getFirstPostElement()
+        instaDriver.jse.executeScript("arguments[0].scrollIntoView(true);", firstPostelement)
+        instaDriver.actions.moveToElement(firstPostelement).click().perform()
     }
 
     private WebElement getFirstPostElement() {
@@ -53,7 +56,7 @@ class OperationsHelper {
         return articleElement.findElement(By.xpath('.//img'))
     }
 
-     void clickOnWebElement(WebElement webElement) {
+    void clickOnWebElement(WebElement webElement) {
         instaDriver.actions.moveToElement(webElement).click().perform()
     }
 }
