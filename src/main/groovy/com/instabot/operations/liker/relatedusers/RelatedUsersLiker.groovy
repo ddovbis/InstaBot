@@ -63,7 +63,6 @@ class RelatedUsersLiker {
 
         setTargetNrOfLikes(user)
 
-        // TODO if contains "No Posts Yet" -> processed; e.g., https://www.instagram.com/jacobbaese03/
         if (user.isFullyLiked()) {
             LOG.info("User $user.username is fully liked ($user.nrOfLikes out of $user.targetedNrOfLikes posts liked); no post likes processing is required")
             return
@@ -72,7 +71,7 @@ class RelatedUsersLiker {
         operationsHelper.goToUserPage(user.username)
 
         if (operationsHelper.userHasNoPosts()) {
-            LOG.info("User has no posts; set it as fully liked and move to the next user")
+            LOG.info("User has no posts")
             setAsFullyLiked(user)
             return
         }
@@ -87,32 +86,28 @@ class RelatedUsersLiker {
             boolean isPostLiked = isPostLiked(likeButtonSvgElement)
 
             if (isPostLiked) {
-                LOG.info("Post nr. $postNr has already been liked; set user as fully liked and move to the next user")
+                LOG.info("Post nr. $postNr has already been liked")
                 setAsFullyLiked(user)
                 return
             }
-            // TODO add to a method // CHeck ++
-            user.incrementNrOfLikes()
-            LOG.info("Like post nr: ${++postNr}; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
-            // TODO implement waiting time based on .ini
-            sleep(operationsHelper.getRandomInt(2, 6) * 1000)
+
+            // TODO To a method
+            LOG.info("Like post nr: ${++postNr}")
+            sleep(operationsHelper.getRandomInt(2, 6) * 1000) // TODO implement waiting time based on .ini
             instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
+            user.incrementNrOfLikes()
+            LOG.info("total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
+            userDataService.save(user) // TODO report an ActionLike instead
 
-            // TODO report an ActionLike instead
-            userDataService.save(user)
 
-
-            // TODO implement waiting time based on .ini
+            // TODO implement waiting time based on .ini; move waiting time
             sleep(operationsHelper.getRandomInt(18, 24) * 1000)
 
 
             nextPostButtonElement = getNextPostButtonElement()
             if (nextPostButtonElement == null) {
-                LOG.info("User $user.username has no more posts; add user status: liked")
-                // TODO add user status
-                return
-            }
-            if (user.isFullyLiked()) {
+                LOG.info("User $user.username has no more posts")
+                setAsFullyLiked(user)
                 return
             }
 
@@ -131,6 +126,7 @@ class RelatedUsersLiker {
     }
 
     private void setAsFullyLiked(User user) {
+        LOG.info("Add user label: FULLY_LIKED")
         user.addLabel(UserLabel.FULLY_LIKED)
         userDataService.save(user)
     }
