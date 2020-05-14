@@ -35,14 +35,25 @@ class OperationsHelper {
     }
 
     /**
+     * Checks if there is a heading with "No Posts Yet" which means that the user hasn't posted anything yet
+     * @return true if the heading is found or false otherwise
+     * Note: instaWebDriver must be open on an Instagram user page
+     */
+    boolean userHasNoPosts() {
+        List<WebElement> noPostsYetElements = instaDriver.driver.findElements(By.xpath("//h1[contains(text(), 'No Posts Yet')]"))
+        return (noPostsYetElements != null && noPostsYetElements.size() != 0)
+    }
+
+    /**
      * Opens the first post from an Instagram user page
      * @param username - the target user whose first post should be opened
      */
     void openFirstPost(String username) {
-        goToUserPage(username)
+        if (!instaDriver.driver.currentUrl.startsWith(INSTAGRAM_PAGE + username)) {
+            goToUserPage(username)
+        }
 
         LOG.debug("Click on the first post image to open it")
-
         WebElement firstPostelement = getFirstPostElement()
         instaDriver.jse.executeScript("arguments[0].scrollIntoView(true);", firstPostelement)
         instaDriver.actions.moveToElement(firstPostelement).click().perform()

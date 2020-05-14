@@ -63,36 +63,45 @@ class RelatedUsersLiker {
 
         setTargetNrOfLikes(user)
 
+        // TODO if contains "No Posts Yet" -> processed; e.g., https://www.instagram.com/jacobbaese03/
         if (user.isFullyLiked()) {
             LOG.info("User $user.username is fully liked ($user.nrOfLikes out of $user.targetedNrOfLikes posts liked); no post likes processing is required")
             return
         }
 
+        operationsHelper.goToUserPage(user.username)
+
+        if (operationsHelper.userHasNoPosts()) {
+            LOG.info("User has no posts; set it as fully liked and move to the next user")
+            setAsFullyLiked(user)
+            return
+        }
+
         operationsHelper.openFirstPost(user.username)
 
+        // TODO to  a method
         int postNr = 0
         WebElement nextPostButtonElement
         do {
             WebElement likeButtonSvgElement = getLikeButtonSvgElement()
             boolean isPostLiked = isPostLiked(likeButtonSvgElement)
 
-            postNr++
             if (isPostLiked) {
                 LOG.info("Post nr. $postNr has already been liked; set user as fully liked and move to the next user")
-                user.addLabel(UserLabel.FULLY_LIKED)
-                userDataService.save(user)
-            } else {
-                // TODO add to a method
-                user.incrementNrOfLikes()
-                LOG.info("Like post nr: $postNr; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
-                // TODO implement waiting time based on .ini
-                sleep(operationsHelper.getRandomInt(2, 6) * 1000)
-                instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
-
-                // TODO report an ActionLike instead
-                userDataService.save(user)
-
+                setAsFullyLiked(user)
+                return
             }
+            // TODO add to a method // CHeck ++
+            user.incrementNrOfLikes()
+            LOG.info("Like post nr: ${++postNr}; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
+            // TODO implement waiting time based on .ini
+            sleep(operationsHelper.getRandomInt(2, 6) * 1000)
+            instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
+
+            // TODO report an ActionLike instead
+            userDataService.save(user)
+
+
             // TODO implement waiting time based on .ini
             sleep(operationsHelper.getRandomInt(18, 24) * 1000)
 
@@ -109,7 +118,7 @@ class RelatedUsersLiker {
 
             // move to the next post
             operationsHelper.clickOnWebElement(nextPostButtonElement)
-        } while (!user.isFullyLiked() || nextPostButtonElement == null)
+        } while (!user.isFullyLiked())
     }
 
     private void setTargetNrOfLikes(User user) {
@@ -119,6 +128,11 @@ class RelatedUsersLiker {
             LOG.info("Targeted nr. of likes for user $user.username was set to: $user.targetedNrOfLikes")
             userDataService.save(user)
         }
+    }
+
+    private void setAsFullyLiked(User user) {
+        user.addLabel(UserLabel.FULLY_LIKED)
+        userDataService.save(user)
     }
 
     /**
