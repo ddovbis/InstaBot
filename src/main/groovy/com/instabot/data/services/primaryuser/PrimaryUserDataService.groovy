@@ -62,11 +62,11 @@ class PrimaryUserDataService {
         return primaryUserRepository.findAll()
     }
 
-    PrimaryUser get(PrimaryUser primaryUserList) {
-        if (primaryUserList == null) {
+    PrimaryUser get(PrimaryUser primaryUser) {
+        if (primaryUser == null) {
             return null
         }
-        return get(primaryUserList.username)
+        return get(primaryUser.username)
     }
 
     PrimaryUser get(String username) {
