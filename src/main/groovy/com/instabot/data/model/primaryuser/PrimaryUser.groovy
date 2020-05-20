@@ -40,12 +40,14 @@ class PrimaryUser {
 
     @Override
     boolean equals(Object o) {
-        if (o == this) {
-            return true
-        } else if (!(o instanceof PrimaryUser)) {
-            return false
-        } else {
-            return ((PrimaryUser) o).username == username
-        }
+        if (this.is(o)) return true
+        if (this.getClass() != o.class) return false
+
+        return ((PrimaryUser) o).username == username
+    }
+
+    @Override
+    int hashCode() {
+        return username.hashCode()
     }
 }

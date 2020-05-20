@@ -111,12 +111,20 @@ class User {
 
     @Override
     boolean equals(Object o) {
-        if (o == this) {
-            return true
-        } else if (!(o instanceof User)) {
-            return false
-        } else {
-            return ((User) o).id == id
-        }
+        if (this.is(o)) return true
+        if (this.getClass() != o.class) return false
+
+        return ((User) o).id == id
     }
+
+    int hashCode() {
+        int result
+        result = id.hashCode()
+        result = 31* result + masterUsername.hashCode()
+        result = 31 * result + username.hashCode()
+        result = 31 * result + name.hashCode()
+        return result
+    }
+
+
 }
