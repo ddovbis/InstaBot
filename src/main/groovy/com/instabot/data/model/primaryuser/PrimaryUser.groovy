@@ -32,6 +32,17 @@ class PrimaryUser {
         this.username = username
     }
 
+    PrimaryUser incrementNrOfLikes() {
+        totalLiked++
+        return this
+    }
+
+    PrimaryUser incrementNrOfUnfollowed() {
+        totalUnfollowed++
+        return this
+    }
+
+    PrimaryUser setLikesLimitReachedAt(LocalDateTime likesLimitReachedAt) {
     @Override
     String toString() {
         XmlMapper xmlMapper = new XmlMapper()

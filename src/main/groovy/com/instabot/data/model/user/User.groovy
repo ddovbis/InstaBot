@@ -43,7 +43,7 @@ class User {
     }
 
 
-    void setIsFollower(boolean isFollower) {
+    User setIsFollower(boolean isFollower) {
         if (!isFollower && this.isFollower) {
             this.unfollowedAt = LocalDateTime.now()
         } else if (isFollower && !this.isFollower) {
@@ -52,9 +52,11 @@ class User {
 
         this.isFollower = isFollower
         this.isFollowerLastUpdatedAt = LocalDateTime.now()
+
+        return this
     }
 
-    void setIsFollowed(boolean isFollowed) {
+    User setIsFollowed(boolean isFollowed) {
         if (!isFollowed && this.isFollowed) {
             this.becameUnfollowedAt = LocalDateTime.now()
         } else if (isFollowed) {
@@ -67,36 +69,44 @@ class User {
 
         this.isFollowed = isFollowed
         this.isFollowedLastUpdatedAt = LocalDateTime.now()
+
+        return this
     }
 
-    void incrementNrOfLikes() {
+    User incrementNrOfLikes() {
         nrOfLikes++
         if (nrOfLikes == targetedNrOfLikes) {
             addLabel(UserLabel.FULLY_LIKED)
         }
+
+        return this
     }
 
-    void setTargetedNrOfLikes(int targetedNrOfLikes) {
+    User setTargetedNrOfLikes(int targetedNrOfLikes) {
         this.targetedNrOfLikes = targetedNrOfLikes
         if (nrOfLikes >= targetedNrOfLikes) {
             addLabel(UserLabel.FULLY_LIKED)
         }
+
+        return this
     }
 
-    void addLabel(UserLabel label) {
+    User addLabel(UserLabel label) {
         if (label == UserLabel.FULLY_LIKED) {
             processedLikesAt = LocalDateTime.now()
         }
-
         labels.add(label)
+
+        return this
     }
 
-    void removeLabel(UserLabel label) {
+    User removeLabel(UserLabel label) {
         if (label == UserLabel.FULLY_LIKED) {
             processedLikesAt = null
         }
-
         labels.remove(label)
+
+        return this
     }
 
     boolean isFullyLiked() {
