@@ -59,11 +59,13 @@ class InstaBot {
     }
 
     private void standardMode() {
-        // update related users in database
-        relatedUsersUpdater.updateRelatedUsers()
+        LOG.info("InstaBot has been started in standard mode")
 
-        // send related users report
-        relatedUsersReporter.sendReport()
+        // update related users in database
+        if (relatedUsersUpdater.updateRelatedUsers()){
+            // send related users report if at least one user has been updated
+            relatedUsersReporter.sendReport()
+        }
 
         // like posts published by related users
         relatedUsersLiker.likeRelatedUsersPosts()
@@ -75,9 +77,9 @@ class InstaBot {
         LOG.info("InstaBot has been started in reporting-only mode (master username doesn't belong to the primary user logged into Instagram)")
 
         // update related users in database
-        relatedUsersUpdater.updateRelatedUsers()
-
-        // send related users report
-        relatedUsersReporter.sendReport()
+        if (relatedUsersUpdater.updateRelatedUsers()){
+            // send related users report if at least one user has been updated
+            relatedUsersReporter.sendReport()
+        }
     }
 }

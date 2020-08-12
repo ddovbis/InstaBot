@@ -45,13 +45,14 @@ class RelatedUsersUpdater {
 
     /**
      * Extracts all followed and and the users being followd by the master user and saves or updates them in database
+     * @return - true if any of related users have been updated, or false otherwise
      */
-    void updateRelatedUsers() {
+    boolean updateRelatedUsers() {
         LocalDateTime startTime = LocalDateTime.now()
 
         LOG.info("Start related users (followers and following lists) updater for master user: $masterUsername")
         if (!shouldBeUpdated(startTime)) {
-            return
+            return false
         }
 
         Map<String, User> extractedUserIdToUserMap = new HashMap<>()
@@ -81,6 +82,7 @@ class RelatedUsersUpdater {
         userDataService.saveAll(updatedUsers)
 
         updatePrimaryUserStats(updatedUsers)
+        return true
     }
 
     /**
@@ -97,7 +99,7 @@ class RelatedUsersUpdater {
         if (masterUsername == instaWebDriver.primaryUsername) {
             return shouldBeUpdatedStandardMode(startTime)
         } else {
-            return shouldBeUpdatedReportingMode(masterUsername, startTime)
+            return shouldBeUpdatedReportingMode(startTime)
         }
     }
 
