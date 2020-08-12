@@ -31,7 +31,7 @@ class RelatedUsersExtractor {
             Element userLink = singleUserContainer.select("a[href]:not(:has(img))").first()
             String username = userLink.text()
             // get userLink's "brother" element, which contains user's name (ignore elements containing title attribute)
-            Element userLinkParent = userLink.parent().parent()
+            Element userLinkParent = userLink.parent().parent().parent()
             String name = userLinkParent.select("div:not(:has([title]))").first().html()
 
             User user = new User(masterUsername, username, name)
