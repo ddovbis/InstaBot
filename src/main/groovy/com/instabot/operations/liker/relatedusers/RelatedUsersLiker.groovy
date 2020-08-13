@@ -1,10 +1,14 @@
 package com.instabot.operations.liker.relatedusers
 
 import com.instabot.config.InstaBotConfig
+import com.instabot.data.model.interaction.like.LikeInteraction
 import com.instabot.data.model.user.User
 import com.instabot.data.model.user.UserLabel
+import com.instabot.data.services.interaction.like.LikeInteractionDataService
+import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import com.instabot.data.services.user.UserDataService
 import com.instabot.operations.helper.OperationsHelper
+import com.instabot.operations.liker.relatedusers.helper.LikesProcessingBlocker
 import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -15,12 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
-/*
-    TODO
-        1. LOG (in debug) the stand by time
-        2. Random() sets multiple times in a raw the same number. Solve it.
- */
-
+// TODO Document
 @Component
 class RelatedUsersLiker {
     private static final Logger LOG = LogManager.getLogger(RelatedUsersLiker.class)
@@ -30,22 +29,61 @@ class RelatedUsersLiker {
     @Autowired
     private UserDataService userDataService
     @Autowired
+    private LikeInteractionDataService likeInteractionDataService
+    @Autowired
+    private PrimaryUserDataService primaryUserDataService
+    @Autowired
     private OperationsHelper operationsHelper
     @Autowired
     private InstaWebDriver instaDriver
+    @Autowired
+    private LikesProcessingBlocker likesProcessingBlocker
 
     private int targetedNrOfLikesMin
     private int targetedNrOfLikesMax
+    private int maxLikesPerHour
+
+    private int targetSleepTimeAfterOpeningUserPage
+    private int targetSleepTimeAfterMovingToNextPost
+    private int targetSleepTimeAfterPerformingPostLike
 
     @Bean("initializeRelatedUsersLiker")
     private void initialize() {
         LOG.info("Initialize RelatedUsersLiker")
 
-        targetedNrOfLikesMin = instaBotConfig.getIniFile().get("related-users", "targeted-nr-of-likes-min", Integer.class)
+        targetedNrOfLikesMin = instaBotConfig.getIniFile().get("user-liker", "targeted-nr-of-likes-min", Integer.class)
         LOG.info("Min. targeted nr. of likes: $targetedNrOfLikesMin")
 
-        targetedNrOfLikesMax = instaBotConfig.getIniFile().get("related-users", "targeted-nr-of-likes-max", Integer.class)
+        targetedNrOfLikesMax = instaBotConfig.getIniFile().get("user-liker", "targeted-nr-of-likes-max", Integer.class)
         LOG.info("Max. targeted nr. of likes: $targetedNrOfLikesMax")
+
+        maxLikesPerHour = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-hour", Integer.class)
+        LOG.info("Max. posts to be liked per hour: $maxLikesPerHour")
+
+        setTimers()
+    }
+
+    private setTimers() {
+        double avgLikesPerUser = (targetedNrOfLikesMin + targetedNrOfLikesMax) / 2
+        LOG.debug("Avg. likes per user: $avgLikesPerUser")
+
+        double avgUsersPerHour = maxLikesPerHour / avgLikesPerUser
+        LOG.debug("Avg. users to be processed per hour: $avgUsersPerHour")
+
+        double avgTimePerUser = 60 * 60 * 1000 / avgUsersPerHour
+        LOG.debug("Avg. time to process one user: $avgTimePerUser ms")
+
+        targetSleepTimeAfterOpeningUserPage = (avgTimePerUser * 0.2) as int
+        LOG.info("Target sleep time after opening user page: $targetSleepTimeAfterOpeningUserPage ms")
+
+        double avgTimeToProcessOnePost = (avgTimePerUser - targetSleepTimeAfterOpeningUserPage) / avgLikesPerUser
+        LOG.debug("Avg. time to process one post: $avgTimeToProcessOnePost ms")
+
+        targetSleepTimeAfterMovingToNextPost = (avgTimeToProcessOnePost * 0.7) as int
+        LOG.info("Target sleep time after moving to the next post: $targetSleepTimeAfterMovingToNextPost ms")
+
+        targetSleepTimeAfterPerformingPostLike = (avgTimeToProcessOnePost * 0.3) as int
+        LOG.info("Target sleep time after performing post like: $targetSleepTimeAfterPerformingPostLike ms")
     }
 
     void likeRelatedUsersPosts() {
@@ -53,22 +91,24 @@ class RelatedUsersLiker {
 
         List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
         for (User userToBeLiked : userToBeLikedList) {
+            boolean isPrimaryUserBlocked = likesProcessingBlocker.blockPrimaryUserLikesProcessingIfNecessary()
+            if (isPrimaryUserBlocked) {
+                return
+            }
+
+            operationsHelper.goToUserPage(userToBeLiked.username)
+            sleepAfterOpeningUserPage()
             likeUserPosts(userToBeLiked)
-            sleep(operationsHelper.getRandomInt(18, 36) * 1000)
         }
     }
 
-    void likeUserPosts(User user) {
+    private void likeUserPosts(User user) {
         LOG.info("Start processing post likes for user: $user.username")
 
         setTargetNrOfLikes(user)
-
-        if (user.isFullyLiked()) {
-            LOG.info("User $user.username is fully liked ($user.nrOfLikes out of $user.targetedNrOfLikes posts liked); no post likes processing is required")
+        if (isFullyLiked(user)) {
             return
         }
-
-        operationsHelper.goToUserPage(user.username)
 
         if (operationsHelper.userHasNoPosts()) {
             LOG.info("User has no posts")
@@ -77,42 +117,33 @@ class RelatedUsersLiker {
         }
 
         operationsHelper.openFirstPost(user.username)
+        sleepAfterOpeningFirstPost()
 
-        // TODO to  a method
         int postNr = 0
-        WebElement nextPostButtonElement
         do {
-            WebElement likeButtonSvgElement = getLikeButtonSvgElement()
-            boolean isPostLiked = isPostLiked(likeButtonSvgElement)
-
-            if (isPostLiked) {
-                LOG.info("Post nr. $postNr has already been liked")
-                setAsFullyLiked(user)
-                return
-            }
-
-            // TODO To a method
             LOG.info("Like post nr: ${++postNr}")
-            sleep(operationsHelper.getRandomInt(2, 6) * 1000) // TODO implement waiting time based on .ini
-            instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
-            user.incrementNrOfLikes()
-            LOG.info("total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
-            userDataService.save(user) // TODO report an ActionLike instead
-
-
-            // TODO implement waiting time based on .ini; move waiting time
-            sleep(operationsHelper.getRandomInt(18, 24) * 1000)
-
-
-            nextPostButtonElement = getNextPostButtonElement()
-            if (nextPostButtonElement == null) {
-                LOG.info("User $user.username has no more posts")
+            WebElement likeButtonSvgElement = getLikeButtonSvgElement()
+            if (isPostLiked(likeButtonSvgElement)) {
+                LOG.info("Post has already been liked")
                 setAsFullyLiked(user)
                 return
             }
 
-            // move to the next post
-            operationsHelper.clickOnWebElement(nextPostButtonElement)
+            performPostLike(likeButtonSvgElement)
+            reportPostLike(user)
+            sleepAfterPerformingPostLike()
+            if (isFullyLiked(user)) {
+                return
+            }
+
+            WebElement nextPostButtonElement = getNextPostButtonElement(user)
+            if (nextPostButtonElement == null) {
+                setAsFullyLiked(user)
+                return
+            }
+
+            moveToNextPost(nextPostButtonElement)
+            sleepAfterMovingToNextPost()
         } while (!user.isFullyLiked())
     }
 
@@ -127,8 +158,7 @@ class RelatedUsersLiker {
 
     private void setAsFullyLiked(User user) {
         LOG.info("Add user label: FULLY_LIKED")
-        user.addLabel(UserLabel.FULLY_LIKED)
-        userDataService.save(user)
+        userDataService.save(user.addLabel(UserLabel.FULLY_LIKED))
     }
 
     /**
@@ -159,15 +189,83 @@ class RelatedUsersLiker {
         }
     }
 
+    private boolean isFullyLiked(User user) {
+        if (user.isFullyLiked()) {
+            LOG.info("User $user.username is labeled as fully liked ($user.nrOfLikes out of $user.targetedNrOfLikes posts liked)")
+            return true
+        }
+        return false
+    }
+
+    private void performPostLike(WebElement likeButtonSvgElement) {
+        instaDriver.actions.moveToElement(likeButtonSvgElement).click().perform()
+    }
+
+    private void reportPostLike(User user) {
+        reportPostLikeOnUser(user)
+        saveLikeInteraction(user)
+        reportPostLikeOnPrimaryUser()
+        LOG.info("Post like processed successfully; total posts liked: $user.nrOfLikes out of $user.targetedNrOfLikes")
+    }
+
+    private void reportPostLikeOnUser(User user) {
+        userDataService.save(user.incrementNrOfLikes())
+    }
+
+    private void saveLikeInteraction(User targetUser) {
+        likeInteractionDataService.save(new LikeInteraction(instaDriver.primaryUsername, targetUser.username))
+    }
+
+    private void reportPostLikeOnPrimaryUser() {
+        primaryUserDataService.save(primaryUserDataService.createOrGetIfExists(instaDriver.primaryUsername).incrementNrOfLikes())
+    }
+
     /**
      * @return - webelement which will redirect the driver to the following post
      */
-    private WebElement getNextPostButtonElement() {
+    private WebElement getNextPostButtonElement(User user) {
         List<WebElement> nextElements = instaDriver.driver.findElements(By.xpath("//a[contains(text(), 'Next')]"))
         if (nextElements.size() == 0) {
+            LOG.info("User $user.username has no more posts")
             return null
         } else {
             return nextElements.first()
         }
+    }
+
+    private void moveToNextPost(WebElement nextPostButtonElement) {
+        LOG.debug("Move to the next post")
+        operationsHelper.clickOnWebElement(nextPostButtonElement)
+    }
+
+    private void sleepAfterOpeningUserPage() {
+        int sleepTime = getSleepTime(targetSleepTimeAfterOpeningUserPage, 0.35)
+        LOG.debug("Sleep after opening user page: $sleepTime ms ")
+        sleep(sleepTime)
+    }
+
+    private void sleepAfterOpeningFirstPost() {
+        int sleepTime = getSleepTime(targetSleepTimeAfterMovingToNextPost, 0.25)
+        LOG.debug("Sleep after opening first post: $sleepTime ms ")
+        sleep(sleepTime)
+    }
+
+    private void sleepAfterPerformingPostLike() {
+        int sleepTime = getSleepTime(targetSleepTimeAfterPerformingPostLike, 0.25)
+        LOG.debug("Sleep after performing post like: $sleepTime ms ")
+        sleep(sleepTime)
+    }
+
+    private void sleepAfterMovingToNextPost() {
+        int sleepTime = getSleepTime(targetSleepTimeAfterMovingToNextPost, 0.25)
+        LOG.debug("Sleep after moving to the next post: $sleepTime ms ")
+        sleep(sleepTime)
+    }
+
+    private int getSleepTime(double targetSleepTime, double marginPercentage) {
+        double margin = targetSleepTime * marginPercentage
+        int minSleepTime = (targetSleepTime - margin) as int
+        int maxSleepTime = (targetSleepTime + margin) as int
+        return operationsHelper.getRandomInt(minSleepTime, maxSleepTime)
     }
 }

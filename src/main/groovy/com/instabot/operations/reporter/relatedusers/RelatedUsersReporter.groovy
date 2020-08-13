@@ -36,7 +36,7 @@ class RelatedUsersReporter {
     }
 
     void sendReport() {
-        if (!sendReport) { // TODO: Or user updated recently
+        if (!sendReport) {
             LOG.debug("Report sending is disabled; no report will be sent for related users")
             return
         } else {

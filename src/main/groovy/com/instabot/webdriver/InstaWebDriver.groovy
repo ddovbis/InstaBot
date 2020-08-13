@@ -35,7 +35,7 @@ class InstaWebDriver {
     public JavascriptExecutor jse
     public Actions actions
 
-    public PrimaryUser primaryUser
+    public PrimaryUser primaryUser // TODO Remove and replace the usage by getOrCreate
     public String primaryUsername
     private String password
 

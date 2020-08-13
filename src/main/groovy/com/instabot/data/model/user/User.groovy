@@ -130,7 +130,7 @@ class User {
     int hashCode() {
         int result
         result = id.hashCode()
-        result = 31* result + masterUsername.hashCode()
+        result = 31 * result + masterUsername.hashCode()
         result = 31 * result + username.hashCode()
         result = 31 * result + name.hashCode()
         return result

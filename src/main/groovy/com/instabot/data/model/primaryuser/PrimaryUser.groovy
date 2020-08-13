@@ -20,6 +20,8 @@ class PrimaryUser {
     int totalLiked
     int totalUnfollowed
 
+    LocalDateTime likesProcessingBlockedUntil
+
     @Convert(converter = StringListConverter.class)
     List<String> whiteList
 
@@ -42,7 +44,11 @@ class PrimaryUser {
         return this
     }
 
-    PrimaryUser setLikesLimitReachedAt(LocalDateTime likesLimitReachedAt) {
+    PrimaryUser setLikesProcessingBlockedUntil(LocalDateTime likesLimitReachedAt) {
+        this.likesProcessingBlockedUntil = likesLimitReachedAt
+        return this
+    }
+
     @Override
     String toString() {
         XmlMapper xmlMapper = new XmlMapper()

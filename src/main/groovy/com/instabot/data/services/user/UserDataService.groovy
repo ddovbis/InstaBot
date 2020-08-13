@@ -24,7 +24,7 @@ class UserDataService {
     @Bean("initializeUserDataService")
     void initialize() {
         LOG.info("Initialize UserDataService")
-        doNotLikeFollowers = instaBotConfig.getIniFile().get("related-users", "do-not-like-followers", Boolean.class) as boolean
+        doNotLikeFollowers = instaBotConfig.getIniFile().get("user-liker", "do-not-like-followers", Boolean.class) as boolean
         LOG.info("set do-not-like-followers: $doNotLikeFollowers")
     }
 
