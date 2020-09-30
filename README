@@ -1,3 +1,21 @@
+InstaBot is a personal project aiming to automatize some processes of interacting with Instagram.
+
+The features include:
+- Extracting Instagram users that are "followed by", or "follow" the application user; or otherwise - related users.
+- Creating a google sheet and sending it by email. The sheet contains all related users split into following categories: "Is not following you back", "You follow each other", "You are not following back".
+- Iterating through instagram pages of related users that are in the "Is not following you back" category. For each user the bot will pick 2-4 posts and will "like" them.
+- All interactions with related users are added to the database. The bot will calculate how many interactions have been performed in the last 1h and 24h, and will stop if the maximum hourly or daily interactions limit is reached.
+- Unfollowing users that have been "liked" more than a week ago, but still are in the "Is not following you back" category (in progress).
+
+Used technologies/libraries:
+- Groovy
+- Selenium WebDriver - for web-scraping and interactions with the browser on behalf of the application user
+- Spring Boot
+- Spring Data JPA
+- Hibernate
+- Log4j2
+- Jsoup - for parsing HTML data
+
 Requirements:
 - FireFox browser. Tested on 72.0.2 (64-bit).
 - Java 8
