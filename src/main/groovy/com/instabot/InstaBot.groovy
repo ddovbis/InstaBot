@@ -43,9 +43,11 @@ class InstaBot {
         try {
             LOG.info("Start InstaBot execution")
             if (masterUsername == instaDriver.primaryUsername) {
-                standardMode()
+                LOG.info("InstaBot has been started in full cycle mode")
+                fullCycleMode()
             } else {
-                reportingMode()
+                LOG.info("InstaBot has been started in reporting-only mode (master username doesn't belong to the primary user logged into Instagram)")
+                startReportingOperations()
             }
         }
         catch (UsersLoadingException e) {
@@ -58,28 +60,52 @@ class InstaBot {
         }
     }
 
-    private void standardMode() {
-        LOG.info("InstaBot has been started in standard mode")
-
-        // update related users in database
-        if (relatedUsersUpdater.updateRelatedUsers()) {
-            // send related users report if at least one user has been updated
-            relatedUsersReporter.sendReport()
-        }
-
-        // like posts published by related users
-        relatedUsersLiker.likeRelatedUsersPosts()
-
-        // other features here
+    private void fullCycleMode() {
+        startReportingOperations()
+        startLoopOperations()
     }
 
-    private void reportingMode() {
-        LOG.info("InstaBot has been started in reporting-only mode (master username doesn't belong to the primary user logged into Instagram)")
-
+    /**
+     * Updates the users related to the master user and reports the results by email
+     */
+    private void startReportingOperations() {
         // update related users in database
         if (relatedUsersUpdater.updateRelatedUsers()) {
             // send related users report if at least one user has been updated
             relatedUsersReporter.sendReport()
         }
     }
+
+    /**
+     * Runs the operations that require pauses between iterations
+     * The pauses are required due to the max. nr. of operations of a specific type allowed per hour
+     */
+    private startLoopOperations() {
+        int cyclesToLoop = 4
+        LOG.info("Run loop operations for $cyclesToLoop times")
+        for (cycleCounter in (0..<4)) {
+            LOG.info("Start loop operations cycle nr.: $cycleCounter")
+
+            // like posts published by related users
+            relatedUsersLiker.likeRelatedUsersPosts()
+
+            // other features here
+
+
+            LOG.info("Loop operations cycle nr. $cycleCounter is finished; sleep for 1 hour...")
+            sleepOneHour()
+        }
+    }
+
+    /**
+     * Sleeps for one hour reporting the progress every minute
+     */
+    private sleepOneHour() {
+        for (sleepMsPassed in (60000..3600000).step(60000)) {
+            LOG.debug("Slept minutes: ${sleepMsPassed / 60000} ")
+            sleep(60000)
+        }
+    }
+
+
 }
