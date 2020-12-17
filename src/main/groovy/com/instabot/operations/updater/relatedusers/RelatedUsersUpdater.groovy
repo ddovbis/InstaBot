@@ -1,6 +1,7 @@
 package com.instabot.operations.updater.relatedusers
 
 import com.instabot.config.InstaBotConfig
+import com.instabot.data.model.primaryuser.PrimaryUser
 import com.instabot.data.model.user.User
 import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import com.instabot.data.services.user.UserDataService
@@ -104,11 +105,11 @@ class RelatedUsersUpdater {
     }
 
     private boolean shouldBeUpdatedStandardMode(LocalDateTime startTime) {
-        LocalDateTime lastRelatedUsersUpdate = instaWebDriver.primaryUser.relatedUsersUpdatedAt
+        LocalDateTime lastRelatedUsersUpdate = instaWebDriver.getPrimaryUser().relatedUsersUpdatedAt
         if (lastRelatedUsersUpdate == null) {
             LOG.info("Primary user's related users have never been updated; proceed with the update")
             return true
-        } else if (ChronoUnit.MINUTES.between(instaWebDriver.primaryUser.relatedUsersUpdatedAt, startTime) >= updateFrequency) {
+        } else if (ChronoUnit.MINUTES.between(lastRelatedUsersUpdate, startTime) >= updateFrequency) {
             LOG.info("Primary user's related users have been updated more than $updateFrequency minute(s) ago; proceed with the update")
             return true
         } else {
@@ -210,9 +211,11 @@ class RelatedUsersUpdater {
         if (masterUsername != instaWebDriver.primaryUsername) {
             LOG.debug("InstaBot is running in reporting-mode; no update is required")
         }
-        instaWebDriver.primaryUser.followers = updatedUsers.findAll(user -> user.isFollower).size()
-        instaWebDriver.primaryUser.following = updatedUsers.findAll(user -> user.isFollowed).size()
-        instaWebDriver.primaryUser.relatedUsersUpdatedAt = LocalDateTime.now()
-        primaryUserDataService.save(instaWebDriver.primaryUser)
+
+        PrimaryUser primaryUser = instaWebDriver.getPrimaryUser()
+        primaryUser.followers = updatedUsers.findAll(user -> user.isFollower).size()
+        primaryUser.following = updatedUsers.findAll(user -> user.isFollowed).size()
+        primaryUser.relatedUsersUpdatedAt = LocalDateTime.now()
+        primaryUserDataService.save(primaryUser)
     }
 }

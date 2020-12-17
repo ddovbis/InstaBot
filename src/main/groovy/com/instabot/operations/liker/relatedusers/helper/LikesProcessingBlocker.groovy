@@ -44,7 +44,7 @@ class LikesProcessingBlocker {
     }
 
     boolean blockPrimaryUserLikesProcessingIfNecessary() {
-        PrimaryUser primaryUser = primaryUserDataService.get(instaDriver.primaryUsername)
+        PrimaryUser primaryUser = instaDriver.getPrimaryUser()
 
         if (isLikesProcessingBlocked(primaryUser)) {
             return true

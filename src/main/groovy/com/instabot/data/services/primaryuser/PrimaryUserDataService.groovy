@@ -15,28 +15,28 @@ class PrimaryUserDataService {
     private PrimaryUserRepository primaryUserRepository
 
     PrimaryUser createOrGetIfExists(String primaryUsername) {
-        if (exists(primaryUsername)) {
-            return get(primaryUsername)
-        } else {
-            PrimaryUser newPrimaryUser = new PrimaryUser(primaryUsername)
-            save(newPrimaryUser)
-            return newPrimaryUser
-        }
+        PrimaryUser primaryUser = get(primaryUsername)
+        return primaryUser == null ? create(primaryUsername) : primaryUser
+    }
 
+    PrimaryUser create(String primaryUsername) {
+        PrimaryUser newPrimaryUser = new PrimaryUser(primaryUsername)
+        save(newPrimaryUser)
+        return newPrimaryUser
     }
 
     boolean exists(PrimaryUser primaryUser) {
-        if (PrimaryUser == null) {
+        if (primaryUser == null) {
             return false
         }
         return exists(primaryUser.username)
     }
 
-    boolean exists(String username) {
-        if (username == null) {
+    boolean exists(String primaryUsername) {
+        if (primaryUsername == null) {
             return false
         }
-        return primaryUserRepository.existsById(username)
+        return primaryUserRepository.existsById(primaryUsername)
     }
 
     void save(PrimaryUser primaryUser) {
@@ -62,17 +62,10 @@ class PrimaryUserDataService {
         return primaryUserRepository.findAll()
     }
 
-    PrimaryUser get(PrimaryUser primaryUser) {
-        if (primaryUser == null) {
+    private PrimaryUser get(String primaryUsername) {
+        if (primaryUsername == null) {
             return null
         }
-        return get(primaryUser.username)
-    }
-
-    PrimaryUser get(String username) {
-        if (username == null) {
-            return null
-        }
-        return primaryUserRepository.findById(username).get()
+        return primaryUserRepository.findById(primaryUsername).get()
     }
 }

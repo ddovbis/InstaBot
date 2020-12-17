@@ -217,7 +217,7 @@ class RelatedUsersLiker {
     }
 
     private void reportPostLikeOnPrimaryUser() {
-        primaryUserDataService.save(primaryUserDataService.createOrGetIfExists(instaDriver.primaryUsername).incrementNrOfLikes())
+        primaryUserDataService.save(instaDriver.getPrimaryUser().incrementNrOfLikes())
     }
 
     /**

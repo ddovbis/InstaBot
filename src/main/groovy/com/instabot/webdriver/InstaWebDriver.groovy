@@ -35,7 +35,6 @@ class InstaWebDriver {
     public JavascriptExecutor jse
     public Actions actions
 
-    public PrimaryUser primaryUser // TODO Remove and replace the usage by getOrCreate
     public String primaryUsername
     private String password
 
@@ -61,6 +60,10 @@ class InstaWebDriver {
         LOG.info("InstaWebDriver successfully initialized")
     }
 
+    PrimaryUser getPrimaryUser() {
+        return primaryUserDataService.createOrGetIfExists(primaryUsername)
+    }
+
     private isInstaWebDriverDisabled() {
         Boolean isDisabled = instaBotConfig.getIniFile().get("general", "disable-insta-web-driver", Boolean.class)
         if (isDisabled == null) {
@@ -70,10 +73,9 @@ class InstaWebDriver {
     }
 
     private void initializePrimaryUser() {
-        LOG.info("Initialize primary user")
+        LOG.info("Initialize primary username")
         primaryUsername = instaBotConfig.getIniFile().get("general", "primary-username", String.class)
-        primaryUser = primaryUserDataService.createOrGetIfExists(primaryUsername)
-        LOG.info("Primary user successfully initialized for the username: $primaryUsername")
+        LOG.info("Primary user successfully initialized as: $primaryUsername")
     }
 
     private void setPrimaryUserPassword() {
