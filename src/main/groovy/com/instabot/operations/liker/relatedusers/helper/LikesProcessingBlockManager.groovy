@@ -48,7 +48,7 @@ class LikesProcessingBlockManager {
         maxLikesPer24Hours = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-day", Integer.class)
         LOG.info("Max. posts to be liked per 24 hours: $maxLikesPer24Hours")
     }
-
+    
     void unblockPrimaryUserLikesProcessingIfNecessary() {
         LOG.info("Unblock primary user likes processing if necessary")
         PrimaryUser primaryUser = instaDriver.getPrimaryUser()
@@ -63,6 +63,7 @@ class LikesProcessingBlockManager {
             return
         } else if (forceUnblockPrimaryUserLikesProcessing) {
             LOG.info("'Force unblock primary user likes processing' is enabled,the following value will be reverted to 'null': ${TimeUtils.getLegibleDateTime(likesProcessingBlockedUntil)}")
+            saveNewLikesProcessingBlockedUntilValue(primaryUser, null)
             return
         }
 
