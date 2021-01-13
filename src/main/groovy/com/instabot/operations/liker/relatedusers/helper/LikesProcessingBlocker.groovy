@@ -4,6 +4,7 @@ import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.primaryuser.PrimaryUser
 import com.instabot.data.services.interaction.like.LikeInteractionDataService
 import com.instabot.data.services.primaryuser.PrimaryUserDataService
+import com.instabot.utils.time.TimeUtils
 import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -40,7 +41,7 @@ class LikesProcessingBlocker {
         maxLikesPer24Hours = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-day", Integer.class)
         LOG.info("Max. posts to be liked per hour: $maxLikesPer24Hours")
 
-        // TODO reset the block
+        // TODO reset the block if it's specified in the insta-bot.ini file
     }
 
     boolean blockPrimaryUserLikesProcessingIfNecessary() {
@@ -57,7 +58,7 @@ class LikesProcessingBlocker {
 
     private boolean isLikesProcessingBlocked(PrimaryUser primaryUser) {
         if (primaryUser.likesProcessingBlockedUntil > LocalDateTime.now()) {
-            LOG.debug("Likes processing is blocked until: " + primaryUser.likesProcessingBlockedUntil) // TODO Format LDT
+            LOG.debug("Likes processing is blocked until: " + TimeUtils.getLegibleDateTime(primaryUser.likesProcessingBlockedUntil))
             return true
         }
         return false
@@ -71,11 +72,12 @@ class LikesProcessingBlocker {
         return likeInteractionDataService.countByPrimaryUsernameBetween(instaDriver.primaryUsername, LocalDateTime.now().minusHours(24), LocalDateTime.now())
     }
 
-    // TODO Format LDT
     private boolean hasReachedHourlyLimit(PrimaryUser primaryUser, int likesLastHour) {
         if (likesLastHour >= maxLikesPerHour) {
             LocalDateTime blockLikesProcessingUntil = LocalDateTime.now().plusHours(1)
-            LOG.info("Primary-user $primaryUser.username has reached hourly likes limit; nr. of likes: $likesLastHour; block likes processing until: $blockLikesProcessingUntil")
+            LOG.info("Primary-user $primaryUser.username has reached hourly likes limit; " +
+                    "nr. of likes: $likesLastHour; " +
+                    "block likes processing until: ${TimeUtils.getLegibleDateTime(blockLikesProcessingUntil)}")
             primaryUserDataService.save(primaryUser.setLikesProcessingBlockedUntil(blockLikesProcessingUntil))
             return true
         }
@@ -85,7 +87,9 @@ class LikesProcessingBlocker {
     private boolean hasReachedDailyLimit(PrimaryUser primaryUser, int likesLast24Hours) {
         if (likesLast24Hours >= maxLikesPer24Hours) {
             LocalDateTime blockLikesProcessingUntil = LocalDateTime.now().plusDays(1)
-            LOG.info("Primary-user $primaryUser.username has reached daily likes limit; nr. of likes: $likesLast24Hours; block likes processing until: $blockLikesProcessingUntil")
+            LOG.info("Primary-user $primaryUser.username has reached daily likes limit; " +
+                    "nr. of likes: $likesLast24Hours; " +
+                    "block likes processing until: ${TimeUtils.getLegibleDateTime(blockLikesProcessingUntil)}")
             primaryUserDataService.save(primaryUser.setLikesProcessingBlockedUntil(blockLikesProcessingUntil))
             return true
         }

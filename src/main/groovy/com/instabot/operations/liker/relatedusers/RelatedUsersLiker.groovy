@@ -63,7 +63,7 @@ class RelatedUsersLiker {
         setTimers()
     }
 
-    private setTimers() {
+    private void setTimers() {
         double avgLikesPerUser = (targetedNrOfLikesMin + targetedNrOfLikesMax) / 2
         LOG.debug("Avg. likes per user: $avgLikesPerUser")
 
