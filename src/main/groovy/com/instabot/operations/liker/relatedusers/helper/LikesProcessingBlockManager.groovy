@@ -10,14 +10,15 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 import java.time.LocalDateTime
 
 // TODO Document
 @Component
-class LikesProcessingBlocker {
-    private static final Logger LOG = LogManager.getLogger(LikesProcessingBlocker.class)
+class LikesProcessingBlockManager {
+    private static final Logger LOG = LogManager.getLogger(LikesProcessingBlockManager.class)
 
     @Autowired
     private InstaBotConfig instaBotConfig
@@ -28,20 +29,44 @@ class LikesProcessingBlocker {
     @Autowired
     private InstaWebDriver instaDriver
 
+    private boolean forceUnblockPrimaryUserLikesProcessing
     private int maxLikesPerHour
     private int maxLikesPer24Hours
 
     @Bean("initializeLikesProcessingBlocker")
+    @DependsOn("initializeInstaWebDriver")
     private void initialize() {
-        LOG.info("Initialize LikesProcessingBlocker")
+        LOG.info("Initialize LikesProcessingBlockManager")
+
+        forceUnblockPrimaryUserLikesProcessing = instaBotConfig.getIniFile().get("user-liker", "force-unblock-primary-user-likes-processing", Boolean.class)
+        LOG.info("Force unblock primary user likes processing: $forceUnblockPrimaryUserLikesProcessing")
+        unblockPrimaryUserLikesProcessingIfNecessary()
 
         maxLikesPerHour = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-hour", Integer.class)
         LOG.info("Max. posts to be liked per hour: $maxLikesPerHour")
 
         maxLikesPer24Hours = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-day", Integer.class)
-        LOG.info("Max. posts to be liked per hour: $maxLikesPer24Hours")
+        LOG.info("Max. posts to be liked per 24 hours: $maxLikesPer24Hours")
+    }
 
-        // TODO reset the block if it's specified in the insta-bot.ini file
+    void unblockPrimaryUserLikesProcessingIfNecessary() {
+        LOG.info("Unblock primary user likes processing if necessary")
+        PrimaryUser primaryUser = instaDriver.getPrimaryUser()
+        LocalDateTime likesProcessingBlockedUntil = primaryUser.likesProcessingBlockedUntil
+
+        if (likesProcessingBlockedUntil == null) {
+            LOG.info("Likes processing has not been blocked for the user; no action is necessary")
+            return
+        } else if (likesProcessingBlockedUntil < LocalDateTime.now()) {
+            LOG.info("Likes processing block is past due, the following value will be reverted to 'null': ${TimeUtils.getLegibleDateTime(likesProcessingBlockedUntil)}")
+            saveNewLikesProcessingBlockedUntilValue(primaryUser, null)
+            return
+        } else if (forceUnblockPrimaryUserLikesProcessing) {
+            LOG.info("'Force unblock primary user likes processing' is enabled,the following value will be reverted to 'null': ${TimeUtils.getLegibleDateTime(likesProcessingBlockedUntil)}")
+            return
+        }
+
+        LOG.info("Unblocking primary user likes processing requirements are not met")
     }
 
     boolean blockPrimaryUserLikesProcessingIfNecessary() {
@@ -78,7 +103,7 @@ class LikesProcessingBlocker {
             LOG.info("Primary-user $primaryUser.username has reached hourly likes limit; " +
                     "nr. of likes: $likesLastHour; " +
                     "block likes processing until: ${TimeUtils.getLegibleDateTime(blockLikesProcessingUntil)}")
-            primaryUserDataService.save(primaryUser.setLikesProcessingBlockedUntil(blockLikesProcessingUntil))
+            saveNewLikesProcessingBlockedUntilValue(primaryUser, blockLikesProcessingUntil)
             return true
         }
         return false
@@ -90,10 +115,13 @@ class LikesProcessingBlocker {
             LOG.info("Primary-user $primaryUser.username has reached daily likes limit; " +
                     "nr. of likes: $likesLast24Hours; " +
                     "block likes processing until: ${TimeUtils.getLegibleDateTime(blockLikesProcessingUntil)}")
-            primaryUserDataService.save(primaryUser.setLikesProcessingBlockedUntil(blockLikesProcessingUntil))
+            saveNewLikesProcessingBlockedUntilValue(primaryUser, blockLikesProcessingUntil)
             return true
         }
         return false
     }
 
+    private void saveNewLikesProcessingBlockedUntilValue(PrimaryUser primaryUser, LocalDateTime blockLikesProcessingUntil) {
+        primaryUserDataService.save(primaryUser.setLikesProcessingBlockedUntil(blockLikesProcessingUntil))
+    }
 }

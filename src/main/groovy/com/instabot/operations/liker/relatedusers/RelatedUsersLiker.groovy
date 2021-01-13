@@ -8,7 +8,7 @@ import com.instabot.data.services.interaction.like.LikeInteractionDataService
 import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import com.instabot.data.services.user.UserDataService
 import com.instabot.operations.helper.OperationsHelper
-import com.instabot.operations.liker.relatedusers.helper.LikesProcessingBlocker
+import com.instabot.operations.liker.relatedusers.helper.LikesProcessingBlockManager
 import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -37,7 +37,7 @@ class RelatedUsersLiker {
     @Autowired
     private InstaWebDriver instaDriver
     @Autowired
-    private LikesProcessingBlocker likesProcessingBlocker
+    private LikesProcessingBlockManager likesProcessingBlockManager
 
     private int targetedNrOfLikesMin
     private int targetedNrOfLikesMax
@@ -91,7 +91,7 @@ class RelatedUsersLiker {
 
         List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
         for (User userToBeLiked : userToBeLikedList) {
-            boolean isPrimaryUserBlocked = likesProcessingBlocker.blockPrimaryUserLikesProcessingIfNecessary()
+            boolean isPrimaryUserBlocked = likesProcessingBlockManager.blockPrimaryUserLikesProcessingIfNecessary()
             if (isPrimaryUserBlocked) {
                 return
             }
