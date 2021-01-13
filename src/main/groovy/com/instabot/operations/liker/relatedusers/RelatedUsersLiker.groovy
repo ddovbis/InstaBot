@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
-// TODO Document
 @Component
 class RelatedUsersLiker {
     private static final Logger LOG = LogManager.getLogger(RelatedUsersLiker.class)
@@ -63,6 +62,12 @@ class RelatedUsersLiker {
         setTimers()
     }
 
+    /**
+     * Sets how long should be the delay (sleep time) after
+     * - opening a user page
+     * - moving to the next user's post
+     * - pressing on the 'like' button under the user's post
+     */
     private void setTimers() {
         double avgLikesPerUser = (targetedNrOfLikesMin + targetedNrOfLikesMax) / 2
         LOG.debug("Avg. likes per user: $avgLikesPerUser")
@@ -86,6 +91,9 @@ class RelatedUsersLiker {
         LOG.info("Target sleep time after performing post like: $targetSleepTimeAfterPerformingPostLike ms")
     }
 
+    /**
+     * Iterates thorough the Instagram pages of all users whose posts should be liked, opening the posts and clicking on the "like" button.
+     */
     void likeRelatedUsersPosts() {
         LOG.info("Start processing post likes for users related to master user: $instaDriver.primaryUsername")
 
@@ -173,7 +181,6 @@ class RelatedUsersLiker {
     }
 
     /**
-     *
      * @param likeButtonSvgElement - a {@link WebElement} containing 'aria-label' attribute with 'Unlike' value if
      * the post has already been like or 'Like' value otherwise
      * @return - true if the post has been already like and false otherwise

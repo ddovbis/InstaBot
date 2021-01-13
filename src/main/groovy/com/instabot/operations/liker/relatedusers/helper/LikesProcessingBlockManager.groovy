@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component
 
 import java.time.LocalDateTime
 
-// TODO Document
 @Component
 class LikesProcessingBlockManager {
     private static final Logger LOG = LogManager.getLogger(LikesProcessingBlockManager.class)
@@ -48,7 +47,11 @@ class LikesProcessingBlockManager {
         maxLikesPer24Hours = instaBotConfig.getIniFile().get("user-liker", "max-likes-per-day", Integer.class)
         LOG.info("Max. posts to be liked per 24 hours: $maxLikesPer24Hours")
     }
-    
+
+    /**
+     * Sets the likesProcessingBlockedUntil value of the {@link PrimaryUser} if it's past due,
+     * or the {@param forceUnblockPrimaryUserLikesProcessing} is enabled
+     */
     void unblockPrimaryUserLikesProcessingIfNecessary() {
         LOG.info("Unblock primary user likes processing if necessary")
         PrimaryUser primaryUser = instaDriver.getPrimaryUser()
@@ -70,6 +73,12 @@ class LikesProcessingBlockManager {
         LOG.info("Unblocking primary user likes processing requirements are not met")
     }
 
+    /**
+     * Sets the likesProcessingBlockedUntil value of the {@link PrimaryUser} to t+1hour, or t+24hours
+     * in case if the primary user has reached either the hourly or the daily 'like' actions limit
+     *
+     * @return - true if the user has been blocked, and false otherwise
+     */
     boolean blockPrimaryUserLikesProcessingIfNecessary() {
         PrimaryUser primaryUser = instaDriver.getPrimaryUser()
 
