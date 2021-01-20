@@ -8,7 +8,7 @@ import com.instabot.data.services.interaction.like.LikeInteractionDataService
 import com.instabot.data.services.primaryuser.PrimaryUserDataService
 import com.instabot.data.services.user.UserDataService
 import com.instabot.operations.helper.OperationsHelper
-import com.instabot.operations.liker.relatedusers.helper.LikesProcessingBlocker
+import com.instabot.operations.liker.relatedusers.helper.LikesProcessingBlockManager
 import com.instabot.webdriver.InstaWebDriver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
-// TODO Document
 @Component
 class RelatedUsersLiker {
     private static final Logger LOG = LogManager.getLogger(RelatedUsersLiker.class)
@@ -37,7 +36,7 @@ class RelatedUsersLiker {
     @Autowired
     private InstaWebDriver instaDriver
     @Autowired
-    private LikesProcessingBlocker likesProcessingBlocker
+    private LikesProcessingBlockManager likesProcessingBlockManager
 
     private int targetedNrOfLikesMin
     private int targetedNrOfLikesMax
@@ -63,7 +62,13 @@ class RelatedUsersLiker {
         setTimers()
     }
 
-    private setTimers() {
+    /**
+     * Sets how long should be the delay (sleep time) after
+     * - opening a user page
+     * - moving to the next user's post
+     * - pressing on the 'like' button under the user's post
+     */
+    private void setTimers() {
         double avgLikesPerUser = (targetedNrOfLikesMin + targetedNrOfLikesMax) / 2
         LOG.debug("Avg. likes per user: $avgLikesPerUser")
 
@@ -86,12 +91,15 @@ class RelatedUsersLiker {
         LOG.info("Target sleep time after performing post like: $targetSleepTimeAfterPerformingPostLike ms")
     }
 
+    /**
+     * Iterates thorough the Instagram pages of all users whose posts should be liked, opening the posts and clicking on the "like" button.
+     */
     void likeRelatedUsersPosts() {
         LOG.info("Start processing post likes for users related to master user: $instaDriver.primaryUsername")
 
         List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
         for (User userToBeLiked : userToBeLikedList) {
-            boolean isPrimaryUserBlocked = likesProcessingBlocker.blockPrimaryUserLikesProcessingIfNecessary()
+            boolean isPrimaryUserBlocked = likesProcessingBlockManager.blockPrimaryUserLikesProcessingIfNecessary()
             if (isPrimaryUserBlocked) {
                 return
             }
@@ -173,7 +181,6 @@ class RelatedUsersLiker {
     }
 
     /**
-     *
      * @param likeButtonSvgElement - a {@link WebElement} containing 'aria-label' attribute with 'Unlike' value if
      * the post has already been like or 'Like' value otherwise
      * @return - true if the post has been already like and false otherwise
@@ -217,7 +224,7 @@ class RelatedUsersLiker {
     }
 
     private void reportPostLikeOnPrimaryUser() {
-        primaryUserDataService.save(primaryUserDataService.createOrGetIfExists(instaDriver.primaryUsername).incrementNrOfLikes())
+        primaryUserDataService.save(instaDriver.getPrimaryUser().incrementNrOfLikes())
     }
 
     /**
