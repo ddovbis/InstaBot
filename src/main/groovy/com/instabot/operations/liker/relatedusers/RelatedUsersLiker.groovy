@@ -176,7 +176,7 @@ class RelatedUsersLiker {
     private WebElement getLikeButtonSvgElement() {
         // case-insensitive selector; aria-label ends in "like" (Like or Unlike)
         By likeButtonSvgCssSelector = By.cssSelector("svg[aria-label*='like' i]")
-        instaDriver.wait.until(ExpectedConditions.visibilityOfElementLocated(likeButtonSvgCssSelector))
+        instaDriver.wait10sec.until(ExpectedConditions.visibilityOfElementLocated(likeButtonSvgCssSelector))
         return instaDriver.driver.findElement(likeButtonSvgCssSelector)
     }
 

@@ -3,8 +3,8 @@ package com.instabot.webdriver
 import com.instabot.config.InstaBotConfig
 import com.instabot.data.model.primaryuser.PrimaryUser
 import com.instabot.data.services.primaryuser.PrimaryUserDataService
-import io.github.bonigarcia.wdm.DriverManagerType
 import io.github.bonigarcia.wdm.WebDriverManager
+import io.github.bonigarcia.wdm.config.DriverManagerType
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.openqa.selenium.*
@@ -19,6 +19,8 @@ import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 import java.awt.*
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 @Component
 class InstaWebDriver {
@@ -31,7 +33,9 @@ class InstaWebDriver {
 
     private DriverManagerType driverManagerType
     public WebDriver driver
-    public WebDriverWait wait
+    public WebDriverWait wait1sec
+    public WebDriverWait wait2sec
+    public WebDriverWait wait10sec
     public JavascriptExecutor jse
     public Actions actions
 
@@ -103,7 +107,9 @@ class InstaWebDriver {
     }
 
     private void initializeWebDriverWait() {
-        wait = new WebDriverWait(driver, 10)
+        wait1sec = new WebDriverWait(driver, 1)
+        wait2sec = new WebDriverWait(driver, 2)
+        wait10sec = new WebDriverWait(driver, 10)
     }
 
     private void initializeJavaScriptExecutor() {
@@ -159,7 +165,7 @@ class InstaWebDriver {
         // go to Instagram website
         driver.get("https://www.instagram.com/")
         // wait until "Log In" button appears, therefore the page is loaded
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log in')]]")))
+        wait10sec.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log in')]]")))
 
         // go to Log In page if sign up page opened (Instagram returns randomly sign up or log in page)
         if (driver.findElements(By.xpath("//button[text()='Sign up']")).size() > 0) {
@@ -178,7 +184,7 @@ class InstaWebDriver {
         passwordElem.sendKeys(Keys.RETURN)
 
         // wait until "Log In" button disappears, therefore the user is logged in
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log In')]]")))
+        wait10sec.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath("//*[text()[contains(.,'Log In')]]")))
         LOG.info("User successfully logged in")
     }
 
