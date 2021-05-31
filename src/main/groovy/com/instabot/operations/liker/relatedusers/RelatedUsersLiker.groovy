@@ -95,9 +95,13 @@ class RelatedUsersLiker {
      * Iterates thorough the Instagram pages of all users whose posts should be liked, opening the posts and clicking on the "like" button.
      */
     void likeRelatedUsersPosts() {
-        LOG.info("Start processing post likes for users related to master user: $instaDriver.primaryUsername")
+        LOG.info("Start processing post likes for users related to primary user: $instaDriver.primaryUsername")
 
         List<User> userToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
+
+        int totalLikesCount = likeInteractionDataService.countByPrimaryUsername(instaDriver.primaryUsername)
+        LOG.info("Processed likes so far by primary user: $totalLikesCount")
+
         for (User userToBeLiked : userToBeLikedList) {
             boolean isPrimaryUserBlocked = likesProcessingBlockManager.blockPrimaryUserLikesProcessingIfNecessary()
             if (isPrimaryUserBlocked) {
@@ -108,6 +112,14 @@ class RelatedUsersLiker {
             sleepAfterOpeningUserPage()
             likeUserPosts(userToBeLiked)
         }
+
+        LOG.info("Processing post likes is finished")
+
+        List<User> remainedUserToBeLikedList = userDataService.getAllToBeLikedByMasterUsername(instaDriver.primaryUsername)
+        LOG.info("Liked users during the last iteration: ${userToBeLikedList.size() - remainedUserToBeLikedList.size()}")
+
+        int newTotalLikedCount = likeInteractionDataService.countByPrimaryUsername(instaDriver.primaryUsername)
+        LOG.info("Processed likes during the last iteration: ${newTotalLikedCount - totalLikesCount}")
     }
 
     private void likeUserPosts(User user) {

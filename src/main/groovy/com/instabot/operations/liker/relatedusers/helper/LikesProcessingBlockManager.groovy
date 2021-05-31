@@ -86,8 +86,8 @@ class LikesProcessingBlockManager {
             return true
         }
 
-        int likesLastHour = countLikesLastHour()
-        int likesLast24Hours = countLikesLast24Hours()
+        int likesLastHour = likeInteractionDataService.countLikesLastHour(instaDriver.primaryUsername)
+        int likesLast24Hours = likeInteractionDataService.countLikesLast24Hours(instaDriver.primaryUsername)
         return (hasReachedHourlyLimit(primaryUser, likesLastHour) || hasReachedDailyLimit(primaryUser, likesLast24Hours))
     }
 
@@ -97,14 +97,6 @@ class LikesProcessingBlockManager {
             return true
         }
         return false
-    }
-
-    private int countLikesLastHour() {
-        return likeInteractionDataService.countByPrimaryUsernameBetween(instaDriver.primaryUsername, LocalDateTime.now().minusHours(1), LocalDateTime.now())
-    }
-
-    private int countLikesLast24Hours() {
-        return likeInteractionDataService.countByPrimaryUsernameBetween(instaDriver.primaryUsername, LocalDateTime.now().minusHours(24), LocalDateTime.now())
     }
 
     private boolean hasReachedHourlyLimit(PrimaryUser primaryUser, int likesLastHour) {

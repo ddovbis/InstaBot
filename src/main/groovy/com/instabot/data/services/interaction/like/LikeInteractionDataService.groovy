@@ -30,6 +30,18 @@ class LikeInteractionDataService {
         return likeInteractionRepository.findAll()
     }
 
+    int countLikesLastHour(String primaryUsername) {
+        return countByPrimaryUsernameBetween(primaryUsername, LocalDateTime.now().minusHours(1), LocalDateTime.now())
+    }
+
+    int countLikesLast24Hours(String primaryUsername) {
+        return countByPrimaryUsernameBetween(primaryUsername, LocalDateTime.now().minusHours(24), LocalDateTime.now())
+    }
+
+    int countByPrimaryUsername(String primaryUsername) {
+        return likeInteractionRepository.countByPrimaryUsername(primaryUsername)
+    }
+
     int countByPrimaryUsernameBetween(String primaryUsername, LocalDateTime start, LocalDateTime end) {
         return likeInteractionRepository.countByPrimaryUsernameBetween(primaryUsername, start, end)
     }

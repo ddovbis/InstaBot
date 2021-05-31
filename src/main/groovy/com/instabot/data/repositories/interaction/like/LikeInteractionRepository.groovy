@@ -12,6 +12,9 @@ import java.time.LocalDateTime
 interface LikeInteractionRepository extends JpaRepository<LikeInteraction, String> {
     List<LikeInteraction> findByPrimaryUsername(String primaryUsername);
 
+    @Query("SELECT COUNT(*) FROM LikeInteraction il WHERE il.primaryUsername = ?1")
+    int countByPrimaryUsername(String primaryUsername);
+
     @Query("SELECT COUNT(*) FROM LikeInteraction il WHERE il.primaryUsername = ?1 and il.timestamp > ?2 and il.timestamp < ?3")
     int countByPrimaryUsernameBetween(String primaryUsername, LocalDateTime start, LocalDateTime end);
 }
