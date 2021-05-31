@@ -31,12 +31,14 @@ class InstaBot {
     private RelatedUsersLiker relatedUsersLiker
 
     private String masterUsername
+    private int maxIterations
 
     @Bean("initializeInstaBot")
     @DependsOn("initializeInstaBotConfig")
     private void initialize() {
         LOG.info("Initialize InstaBot")
         masterUsername = initializeInstaBotConfig.getIniFile().get("related-users", "master-username", String.class)
+        maxIterations = initializeInstaBotConfig.getIniFile().get("general", "max-iterations", Integer.class)
     }
 
     void start() throws InterruptedException {
@@ -81,16 +83,14 @@ class InstaBot {
      * The pauses are required due to the max. nr. of operations of a specific type allowed per hour
      */
     private startLoopOperations() {
-        int cyclesToLoop = 4
-        LOG.info("Run loop operations for $cyclesToLoop times")
-        for (cycleCounter in (0..<4)) {
+        LOG.info("Run loop operations for $maxIterations times")
+        for (cycleCounter in (0..<maxIterations)) {
             LOG.info("Start loop operations cycle nr.: $cycleCounter")
 
             // like posts published by related users
             relatedUsersLiker.likeRelatedUsersPosts()
 
             // other features here
-
 
             LOG.info("Loop operations cycle nr. $cycleCounter is finished; sleep for 1 hour...")
             sleepOneHour()
