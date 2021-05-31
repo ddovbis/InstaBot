@@ -17,6 +17,6 @@ Used technologies/libraries:
 - Jsoup - for parsing HTML data
 
 Requirements:
-- FireFox browser. Tested on 72.0.2 (64-bit).
+- Google Chrome browser - latest offical version
 - Java 8
 - Groovy 3.0

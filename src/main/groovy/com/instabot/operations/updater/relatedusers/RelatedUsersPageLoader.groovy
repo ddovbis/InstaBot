@@ -3,10 +3,11 @@ package com.instabot.operations.updater.relatedusers
 import com.instabot.operations.helper.OperationsHelper
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.webdriver.InstaWebDriver
+import com.instabot.webdriver.WebDriverHelper
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.openqa.selenium.By
-import org.openqa.selenium.Keys
+import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,6 +20,8 @@ class RelatedUsersPageLoader {
 
     @Autowired
     private InstaWebDriver instaDriver
+    @Autowired
+    private WebDriverHelper driverHelper
     @Autowired
     private OperationsHelper operationsHelper
 
@@ -60,32 +63,28 @@ class RelatedUsersPageLoader {
 
         // open users window, containing a list of users of a certain type (following or followers)
         usersWindowButton.click()
+        instaDriver.wait10sec.until {
+            !getLoadedUsers().empty
+        }
 
-        // identify the first element of the ("following", "followed" or "follow") button of the first user within the open list
-        WebElement firstUserTypeButton = getFirstButtonInTheList()
+        loadAllUsers(masterUsername, userType, safeMode, usersTotalAmount)
+    }
 
-        // navigate 6 steps back through DOM tree to locate the scrolling element - list with all users
-        WebElement usersContainer = getParentOfLevel(firstUserTypeButton, 6)
-
-        // define path of users list menu
-
-        // scroll down into users list menu until all users are loaded
-        By usersListPath = By.cssSelector("div[role='dialog'] li")
-        List<WebElement> loadedUsers
+    void loadAllUsers(String masterUsername, String userType, boolean safeMode, int usersTotalAmount) {
         int loadedUsersAmount = 0
-        int lastLoadedUsersAmount = loadedUsersAmount
+        int lastLoadedUsersAmount = 0
         int consecutiveFailedLoadingAttempts = 0
         while (loadedUsersAmount != usersTotalAmount) {
-            // scroll down into users window to load more users
-            scrollDown(usersContainer, safeMode)
-
             // update users WebElement list and qty
-            loadedUsers = instaDriver.driver.findElements(usersListPath)
+            List<WebElement> loadedUsers = loadMoreUsers(safeMode)
             loadedUsersAmount = loadedUsers.size()
-            LOG.info("Loaded $loadedUsersAmount out of $usersTotalAmount '$userType' users; continue loading")
+            LOG.debug("Loaded $loadedUsersAmount out of $usersTotalAmount '$userType' users; continue loading")
 
-            // if no users have been loaded since last iteration count a new failed attempt
-            if (lastLoadedUsersAmount == loadedUsersAmount) {
+            if (lastLoadedUsersAmount != loadedUsersAmount) {
+                lastLoadedUsersAmount = loadedUsersAmount
+                consecutiveFailedLoadingAttempts = 0
+            } else {
+                // if no users have been loaded since last iteration count a new failed attempt
                 LOG.warn("No new $userType users loaded; consecutive failed loading attempts: ${++consecutiveFailedLoadingAttempts}")
             }
 
@@ -98,13 +97,12 @@ class RelatedUsersPageLoader {
                     return
                 }
             }
-
-            if (lastLoadedUsersAmount != loadedUsersAmount) {
-                lastLoadedUsersAmount = loadedUsersAmount
-                consecutiveFailedLoadingAttempts = 0
-            }
         }
         LOG.info("All $loadedUsersAmount $userType are loaded")
+    }
+
+    List<WebElement> getLoadedUsers() {
+        return driverHelper.getAllByCssSelector("div[role='dialog'] li")
     }
 
     /**
@@ -117,7 +115,7 @@ class RelatedUsersPageLoader {
      */
     private WebElement getUsersWindowButton(String masterUsername, String userType) {
         By usersWindowPath = By.xpath("//a[@href='/" + masterUsername + "/" + userType + "/']")
-        instaDriver.wait.until(ExpectedConditions.visibilityOfElementLocated(usersWindowPath))
+        instaDriver.wait10sec.until(ExpectedConditions.visibilityOfElementLocated(usersWindowPath))
         return instaDriver.driver.findElement(usersWindowPath)
     }
 
@@ -142,52 +140,38 @@ class RelatedUsersPageLoader {
      */
     private WebElement getFirstButtonInTheList() {
         By firstUserTypeButtonPath = By.cssSelector("div[role='dialog'] li button")
-        instaDriver.wait.until(ExpectedConditions.visibilityOfElementLocated(firstUserTypeButtonPath))
+        instaDriver.wait10sec.until(ExpectedConditions.visibilityOfElementLocated(firstUserTypeButtonPath))
         return instaDriver.driver.findElement(firstUserTypeButtonPath)
     }
 
     /**
-     * @param webElement - child element
-     * @param parentLevel - how many times to navigate back through DOM tree
-     * @return - element found after navigating {@param parentLevel} times back through DOM tree
-     */
-    private WebElement getParentOfLevel(WebElement webElement, int parentLevel) {
-        // append "../" for each parent level
-        String xpath = "./" + ("../" * parentLevel)
-        // remove last character to have a valid xpath ('/')
-        xpath = xpath[0..xpath.length() - 2]
-        return webElement.findElement(By.xpath(xpath))
-    }
-
-    /**
-     * Imitates pressing PAGE_DOWN key for multiple times
-     *
-     * @param elementToScroll - scrollable {@link WebElement}
      * @param safeMode - if enabled, adds sleep time before iteration and holds PAGE_DOWN key for a shorter period
+     * Note: In case StaleElementReferenceException is caught, it will be ignored
+     * the calling method must handle the issue based on the fact that there are no new users loaded
      */
-    private void scrollDown(WebElement elementToScroll, boolean safeMode) {
-        if (safeMode) {
-            // sleep between 0.5 and 2 seconds
-            sleep(Math.abs(RANDOM.nextInt() % (2000 - 500)) + 500)
-            // send PAGE_DOWN key 10 times (imitate short hold)
-            for (int i in 1..10) {
-                elementToScroll.sendKeys(Keys.PAGE_DOWN)
-            }
-        } else {
-            // send PAGE_DOWN key 100 times (imitate long hold)
-            for (int i in 1..100) {
-                elementToScroll.sendKeys(Keys.PAGE_DOWN)
-            }
+    private List<WebElement> loadMoreUsers(boolean safeMode) {
+        long minSleepTime = safeMode ? 250 : 50
+        long maxSleepTime = safeMode ? 1000 : 250
+        long sleepTime = Math.abs(RANDOM.nextInt() % (maxSleepTime - minSleepTime)) + minSleepTime
+
+        // sleep between min and max time
+        sleep(sleepTime)
+
+        try {
+            driverHelper.scrollToElement(getLoadedUsers().last())
+        } catch (StaleElementReferenceException ignore) {
         }
 
+        sleep(sleepTime)
+        return getLoadedUsers()
     }
 
-    /**
-     * @param loadedUsersAmount - the amount of users loaded to html
-     * @param usersTotalAmount - how many users are expected to be loaded to html
-     * @return - false if difference between {@param loadedUsersAmountsers} and {@param usersTotalAmount) is less than 5, as it could be due to wrong total users number on Instagram page
-     *         - true otherwise
-     */
+/**
+ * @param loadedUsersAmount - the amount of users loaded to html
+ * @param usersTotalAmount - how many users are expected to be loaded to html
+ * @return - false if difference between {@param loadedUsersAmountsers} and {@param usersTotalAmount) is less than 5, as it could be due to wrong total users number on Instagram page
+ *         - true otherwise
+ */
     private boolean isNecessaryToThrowUserLoadingException(int loadedUsersAmount, int usersTotalAmount) {
         if (Math.abs(loadedUsersAmount - usersTotalAmount) < 5) {
             return false
