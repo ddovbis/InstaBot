@@ -158,7 +158,6 @@
         <groovy.eclipse.compiler.plugin.version>3.6.0-03</groovy.eclipse.compiler.plugin.version>
     </properties>
 
-    <!--TODO Test on another PC if the project compile-->
     <pluginRepositories>
         <pluginRepository>
             <id>bintray</id>
@@ -174,6 +173,34 @@
     </pluginRepositories>
 
     <build>
-
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generateStubs</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

@@ -91,7 +91,7 @@ class LikesProcessingBlockManager {
         return (hasReachedHourlyLimit(primaryUser, likesLastHour) || hasReachedDailyLimit(primaryUser, likesLast24Hours))
     }
 
-    private boolean isLikesProcessingBlocked(PrimaryUser primaryUser) {
+    boolean isLikesProcessingBlocked(PrimaryUser primaryUser) {
         if (primaryUser.likesProcessingBlockedUntil > LocalDateTime.now()) {
             LOG.debug("Likes processing is blocked until: " + TimeUtils.getLegibleDateTime(primaryUser.likesProcessingBlockedUntil))
             return true
@@ -99,7 +99,7 @@ class LikesProcessingBlockManager {
         return false
     }
 
-    private boolean hasReachedHourlyLimit(PrimaryUser primaryUser, int likesLastHour) {
+    boolean hasReachedHourlyLimit(PrimaryUser primaryUser, int likesLastHour) {
         if (likesLastHour >= maxLikesPerHour) {
             LocalDateTime blockLikesProcessingUntil = LocalDateTime.now().plusHours(1)
             LOG.info("Primary-user $primaryUser.username has reached hourly likes limit; " +

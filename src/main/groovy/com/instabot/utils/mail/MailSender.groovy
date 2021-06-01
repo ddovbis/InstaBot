@@ -71,7 +71,7 @@ class MailSender {
         return smtpProperties
     }
 
-    private void setSession(Properties smtpProperties) {
+    void setSession(Properties smtpProperties) {
         session = Session.getInstance(smtpProperties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password)

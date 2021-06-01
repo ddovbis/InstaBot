@@ -213,8 +213,8 @@ class RelatedUsersUpdater {
         }
 
         PrimaryUser primaryUser = instaWebDriver.getPrimaryUser()
-        primaryUser.followers = updatedUsers.findAll(user -> user.isFollower).size()
-        primaryUser.following = updatedUsers.findAll(user -> user.isFollowed).size()
+        primaryUser.followers = updatedUsers.findAll { user -> user.isFollower }.size()
+        primaryUser.following = updatedUsers.findAll { user -> user.isFollowed }.size()
         primaryUser.relatedUsersUpdatedAt = LocalDateTime.now()
         primaryUserDataService.save(primaryUser)
     }
