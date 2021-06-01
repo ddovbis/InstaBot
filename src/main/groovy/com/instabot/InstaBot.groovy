@@ -7,16 +7,18 @@ import com.instabot.operations.updater.relatedusers.RelatedUsersUpdater
 import com.instabot.utils.exceptions.user.UsersLoadingException
 import com.instabot.utils.filehandler.PageSourceSaver
 import com.instabot.webdriver.InstaWebDriver
+import groovy.time.TimeCategory
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 @Component
 @DependsOn("initializeInstaBotConfig")
-class InstaBot {
+class InstaBot implements CommandLineRunner{
     private static final Logger LOG = LogManager.getLogger(InstaBot.class)
 
     @Autowired
@@ -41,7 +43,11 @@ class InstaBot {
         maxIterations = initializeInstaBotConfig.getIniFile().get("general", "max-iterations", Integer.class)
     }
 
-    void start() throws InterruptedException {
+    @Override
+    void run(String... args) throws Exception {
+        LOG.info("Spring application successfully initialized")
+
+        Date startTime = new Date()
         try {
             LOG.info("Start InstaBot execution")
             if (masterUsername == instaDriver.primaryUsername) {
@@ -60,6 +66,8 @@ class InstaBot {
             LOG.info("All operations are finished; close InstaWebDriver connection...")
             instaDriver.closeConnection()
         }
+
+        LOG.info("Spring application finished; running time: ${TimeCategory.minus(new Date(), startTime)}")
     }
 
     private void fullCycleMode() {
