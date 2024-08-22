@@ -25,9 +25,3 @@ Shall you consider to use the bot for yourself, please consider that you do so a
 #### Requirements:
 - Google Chrome browser - latest offical version
 - Java 8
-
-#### Usage
-// TBA 
-
-#### Config
-// TBA
